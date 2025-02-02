@@ -1,0 +1,112 @@
+---
+title: JSON 
+description: Découvrez le format JSON, son rôle clé dans les échanges de données et sa syntaxe essentielle pour les API REST.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+
+## JSON : JavaScript Object Notation
+
+Format de données léger et lisible, **JSON** est le standard pour :
+- L'échange de données client/serveur
+- La sérialisation de structures complexes
+- L'interopérabilité entre langages (tous les langages modernes le supportent)
+
+### Structure de base
+
+**Clé/Valeur** entourées d'accolades, avec :
+- Clés toujours entre guillemets doubles
+- Valeurs pouvant être :
+  - `string` (chaîne)
+  - `number` (nombre)
+  - `boolean` (true/false)
+  - `null`
+  - `array` (tableau)
+  - `object` (objet imbriqué)
+
+```json
+{
+  "nom": "Jean Dupont",
+  "age": 30,
+  "actif": true,
+  "hobbies": ["sport", "musique"],
+  "adresse": {
+    "rue": "123 Main St",
+    "ville": "Paris"
+  }
+}
+```
+
+### Types de données
+
+Les types de données sont les suivants :
+
+| Type | Exemple | Description |
+| --- | --- | --- |
+| String | "Bonjour" | Texte UTF-8 entre guillemets |
+| Number | 42 ou 3.14 | Entier ou décimal |
+| Boolean | true/false | Valeur logique |
+| Null | null | Valeur vide |
+| Array | [1, 2, 3] | Liste ordonnée |
+| Object | `{"name": "Jean"}` | Objet imbriqué |
+
+
+3 structures de données courantes :
+
+```json tab="Simple"
+{
+  "id": 123,
+  "email": "contact@example.com",
+  "abonné": true
+}
+```
+
+```json tab="Tableau et objet"
+{
+  "compétences": ["JS", "Python", "SQL"],
+  "métadonnées": {
+    "création": "2023-01-15",
+    "modifié": true
+  }
+}
+```
+
+```json tab="Complexe"
+{
+  "entreprise": {
+    "nom": "TechCorp",
+    "employés": [
+      {
+        "id": 1,
+        "nom": "Alice",
+        "poste": "Développeuse"
+      },
+      {
+        "id": 2,
+        "nom": "Bob",
+        "poste": "Designer"
+      }
+    ],
+    "sites": ["Paris", "Londres", "New York"]
+  }
+}
+```
+<br/>
+**Bonnes pratiques :** 
+<Callout type="warning" title="Attention aux erreurs courantes">
+ - Pas de virgule traînante en fin de tableau/objet - Guillemets doubles obligatoires pour les clés - Pas de commentaires (contrairement au JavaScript) 
+</Callout>
+
+<Card>
+
+Validation JSON :
+Utilisez des outils comme [JSONLint](https://jsonlint.com/) pour valider votre JSON.
+
+</Card>
+
+<br/>
+<Callout type="info" title="Le saviez-vous ?">
+💡 Le saviez-vous ?
+95% des API REST modernes utilisent JSON comme format principal grâce à sa légèreté et sa flexibilité !
+</Callout>

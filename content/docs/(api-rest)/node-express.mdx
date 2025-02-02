@@ -1,0 +1,50 @@
+---
+title: Créer une API
+description: Guide pratique pour démarrer avec Node.js et Express - Installation des dépendances, initialisation du projet, etc.
+---
+
+## 🛠️ Installation de Node.js
+
+**Étapes clés** :
+1. Téléchargez l'installeur LTS sur [nodejs.org](https://nodejs.org/)
+2. Lancez l'installation (vérifiez les options npm)
+3. Vérifiez la version dans votre terminal :
+```bash
+node -v
+# => v20.12.1 (version actuelle en juin 2024)
+```
+
+<Callout type="info" title="💡 Astuce"> Préférez toujours la version LTS (Long Term Support) pour la stabilité en production </Callout>
+
+## Iniatialiser un projet Node.js
+
+**Dans le terminal :**
+```bash
+mkdir my-api
+cd my-api
+npm init -y
+```
+
+Vous devriez obtenir un fichier ```package.json``` avec le contenu suivant :
+
+```
+mon-api/
+├── node_modules/
+├── package.json
+└── index.js
+```
+
+<Callout type="error" title="Attention"> Le flag `-y` crée un package.json par défaut. Pour personnaliser, utilisez `npm init` sans options </Callout>
+
+## Dépendances clés
+
+Pour démarrer, nous devons installer les dépendances suivantes :
+
+| Package | Utilité | Commande d'installation |
+| --- | --- | --- |
+| Express | Framework web |  ```npm install express``` |
+| Nodemon | Rechargement automatique |  ```npm install --save-dev nodemon``` |
+| cors | Gestion des requêtes cross-origin |  ```npm install cors``` |
+
+
+Nous utiliserons ces dépendances dans la suite de ce cours.

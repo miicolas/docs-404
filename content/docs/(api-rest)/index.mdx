@@ -1,0 +1,34 @@
+---
+title: Introduction
+description: Découvrez les fondamentaux des API REST, leur fonctionnement et leurs cas d'utilisation avec des exemples concrets.
+---
+
+## C'est quoi une API REST ?
+
+Les **API REST** (Representational State Transfer) sont des interfaces de programmation qui permettent :
+
+- De communiquer avec des serveurs web via HTTP
+- De manipuler des ressources (données) sous forme JSON/XML
+- D'utiliser des méthodes standardisées (GET, POST, PUT, DELETE)
+
+**Exemple simple** :
+```js
+// Récupérer un utilisateur
+fetch('https://api.example.com/users/123')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+```
+
+## Pré-requis
+Pour bien suivre ce guide, vous devez connaître :
+
+- Les bases de JavaScript (variables, fonctions, promesses)
+- Les concepts fondamentaux du web
+- Les requêtes HTTP (GET, POST, PUT, DELETE)
+
+
+{/* <Cards> 
+<Card title="Introduction à HTML" href="/docs/(html)/intro-html" icon="📄" > Apprenez les bases du markup web </Card>
+<Card title="Introduction à CSS" href="/docs/(css)/intro-css"icon="🎨">Apprenez les bases du style de pages web </Card>
+</Cards> */}

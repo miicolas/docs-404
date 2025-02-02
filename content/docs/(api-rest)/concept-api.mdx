@@ -1,0 +1,43 @@
+---
+title: Concepts
+description: Les API REST sont des interfaces de programmation qui permettent de communiquer avec des serveurs web. Elles sont basées sur le protocole HTTP et permettent de manipuler des ressources.
+---
+
+
+### C'est quoi une API ? 
+
+Une **API** (Application Programming Interface) est comme un serveur dans un restaurant 🍽️ :
+
+Vous passez commande **(requête)** → Le serveur transmet au chef → Vous recevez votre plat **(réponse)**.
+
+**Exemple concret :**
+
+```js
+// Requête pour obtenir la liste des utilisateurs
+fetch('https://api.example.com/users')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+
+
+### Pourquoi une API ?
+
+<Cards>
+<Card icon="🔗" title="Communication universelle"> Permet à différentes applications de parler le même langage </Card> 
+<Card icon="🔄" title="Manipulation de données"> Opérations CRUD (Create, Read, Update, Delete) simplifiées </Card> 
+</Cards>
+<br/>
+
+**Cas d'usage réel :**
+Une application météo utilise l'API de OpenWeatherMap pour afficher les prévisions :
+```
+GET https://api.openweathermap.org/data/2.5/weather?q=Paris
+```
+
+
+### Avantages des API REST
+<Cards> 
+<Card title="Simplicité"> Utilise le protocole HTTP standard ```bash curl -X GET https://api.example.com/data ``` </Card> 
+<Card title="Flexibilité"> Format de données indépendant (JSON, XML...) ```xml <user><id>123</id><name>Jean</name></user> ``` </Card> 
+</Cards>

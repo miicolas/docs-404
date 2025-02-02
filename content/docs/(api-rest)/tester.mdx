@@ -1,0 +1,36 @@
+---
+title: Tester une API 
+description: Les API REST sont des interfaces de programmation qui permettent de communiquer avec des serveurs web. Elles sont basées sur le protocole HTTP et permettent de manipuler des ressources.
+---
+
+Pour tester une API, pas forcément besoin de code ! Il existe des outils qui permettent de faire des requêtes HTTP facilement :
+
+<Cards>
+<Card title="Postman" icon="📦" href="https://www.postman.com/"></Card>
+<Card title="Insomnia" icon="📦"href="https://insomnia.rest/"></Card>
+</Cards>
+
+Mon ptit préféré est HTTPie : 
+
+<Card title="HTTPie" icon="📦" href="https://httpie.io/"></Card>
+
+
+## Tester une API avec HTTPie
+
+### Obtenir les informations d'une API
+
+```bash
+http https://pokeapi.co/api/v2/pokemon/ditto
+```
+
+Vous obtiendrez :
+
+```json
+{
+  "id": 2,
+  "name": "ditto",
+  "url": "https://pokeapi.co/api/v2/pokemon/2/",
+  "height": 1,
+}
+```
+

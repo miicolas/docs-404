@@ -1,0 +1,49 @@
+---
+title: Principes
+description: Les API REST sont des interfaces de programmation qui permettent de communiquer avec des serveurs web. Elles sont basées sur le protocole HTTP et permettent de manipuler des ressources.
+---
+
+Les principes d'une API REST sont les suivants :
+
+<Cards>
+<Card title="RESTful" icon="📦"> Les ressources sont identifiées par des URIs (Uniform Resource Identifiers) </Card>
+<Card title="Stateless" icon="🔄"> Les requêtes sont indépendantes des autres </Card>
+<Card title="Cacheable" icon="📦"> Les réponses sont cachées pour améliorer les performances </Card>
+<Card title="Layered" icon="📦"> Les APIs sont construites sur des services externes </Card>
+</Cards>
+
+
+### Les méthodes HTTP
+
+Pour utiliser une API, on a besoin de méthode HTTP pour manipuler les ressources : 
+
+- Pour ajouter une ressource : ```POST```
+- Pour modifier une ressource : ```PUT```
+- Pour supprimer une ressource : ```DELETE```
+- Pour récupérer une ressource : ```GET```
+
+Il existe 2 autres méthodes HTTP qu'on utilise moins souvent :
+
+- La méthode ```PATCH``` permet de modifier une ressource en utilisant des données différentes
+- La méthode ```HEAD``` permet de récupérer les informations d'une ressource sans récupérer le corps de la réponse
+
+
+### Les codes de statut HTTP
+
+Lorque des requêtes sont effectuées, le serveur renvoie un code de statut HTTP. Ce code indique le statut de la requête :
+
+1. Réussite : 
+- ```200``` (OK)
+- ```201``` (Created)
+- ```202``` (Accepted)
+- ```204``` (No Content)
+
+2. Erreur : 
+- ```400``` (Bad Request)
+- ```401``` (Unauthorized)
+- ```403``` (Forbidden)
+- ```404``` (Not Found)
+- ```500``` (Internal Server Error)
+
+
+Ces codes de statut permettent de savoir si la requête a été effectuée avec succès ou non et permettent d'identifier les erreurs potentielles.
