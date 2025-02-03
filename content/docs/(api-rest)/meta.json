@@ -1,4 +1,4 @@
 {
     "title": "REST API", 
-    "pages": ["index", "concept-api", "principes", "tester", "json", "node-express"]
+    "pages": ["index-api", "concept-api", "principes-api", "tester-api", "json", "node-express-api", "(les-bases)"]
 }

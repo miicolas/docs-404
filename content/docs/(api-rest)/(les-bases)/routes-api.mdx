@@ -1,0 +1,100 @@
+--- 
+title: Routes
+description: Les API REST sont des interfaces de programmation qui permettent de communiquer avec des serveurs web. Elles sont basées sur le protocole HTTP et permettent de manipuler des ressources.
+---
+
+**Pourquoi utiliser des routes ?**
+
+- Permet de structurer l'application
+- Permet de séparer les différentes fonctionnalités de l'application
+- Permet de rendre l'application plus modulaire
+
+## Créer une route
+
+### Créer un fichier pour la route
+
+Créez un fichier ```router.js``` dans le dossier ```routes``` :
+
+```js
+import { Router } from 'express';
+
+const router = Router();
+
+router.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK',
+    message: '🚀 API opérationnelle!'
+  });
+
+});
+```
+
+### Importer la route dans le fichier index.js
+
+Importez la route dans le fichier ```index.js``` :
+
+```js
+import express from 'express';
+import cors from 'cors';
+import routes from './routes/router.js'; // Import de la route [!code ++]
+
+// Initialisation de l'app
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+app.get('/', (req, res) => { // [!code --]
+  res.json({ // [!code --]
+    status: 'OK',// [!code --]
+    message: '🚀 API opérationnelle!'// [!code --]
+  });// [!code --]
+});// [!code --]
+
+app.use('/api', routes); // [!code ++]
+
+// Démarrage du serveur
+app.listen(PORT, () => {
+  console.log(`Serveur actif sur http://localhost:${PORT}`);
+});
+
+```
+
+<Callout type="info" title="Pourquoi importer la route ?">
+
+L'import de la route permet de séparer les différentes fonctionnalités de l'application. Cela permet de rendre l'application plus modulaire et plus facile à maintenir.
+</Callout>
+
+<Callout type="info" title="Pourquoi utiliser `app.use('/api', routes);` ?">
+
+```app.use('/api', routes);``` permet de définir une route pour l'application. Dans cet exemple, nous avons défini une route GET pour l'application qui pointe vers la route ```/api```.
+</Callout>
+
+## Tester la route
+
+Pour tester la route, exécutez la commande suivante :
+
+```bash
+npm run dev
+```
+
+Vous pouvez maintenant accéder à votre API en utilisant l'URL suivante :
+
+```bash
+http://localhost:3000/api
+```
+
+Vous devriez voir le message suivant :
+
+```json 
+{
+  "status": "OK",
+  "message": "🚀 API opérationnelle!"
+}
+```
+
+Bravo ! Vous avez créé votre première route ! 🎉
+
+

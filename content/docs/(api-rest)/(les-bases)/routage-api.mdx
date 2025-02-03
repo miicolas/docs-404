@@ -1,0 +1,126 @@
+---
+title: Le routage
+description: Le routage est la partie qui est importante de l'architecture d'une API REST. Il permet de définir les différentes URLs qui seront utilisées pour accéder aux différentes ressources de l'API grâce à des méthodes HTTP et mieux trier les requêtes.                                                                             
+---
+
+Le routage est la partie importante de l'architecture d'une API REST. Il permet de définir les différentes URLs qui seront utilisées pour accéder aux différentes ressources de l'API grâce à des méthodes HTTP.
+
+```
+├── index.js 
+├── routes/
+│   ├── router.js         # Routeur principal
+│   └── users/            # Dossier des routes utilisateurs
+│       ├── router.js     # Routeur utilisateurs
+│       ├── add.js        # POST /users
+│       ├── get.js        # GET /users[/:id]
+│       └── delete.js     # DELETE /users/:id
+│       └── list.js       # GET /users
+
+├── node_modules/
+├── package.json
+├── package-lock.json
+```
+
+<Cards> 
+    <Card icon="🔗" title="Endpoint sémantique">
+    Les URLs doivent refléter les ressources : 
+    ```bash 
+    /users # Collection d'utilisateurs /users/123 # Utilisateur spécifique 
+    ``` 
+    </Card> 
+    <Card icon="🔄" title="Méthodes HTTP significatives"> 
+    | Méthode | Action | Exemple | 
+    |-----------|-----------------|-------------------------| 
+    | GET | Récupérer | GET /users | 
+    | POST | Créer | POST /users | 
+    | PUT | Remplacer | PUT /users/123 | 
+    | PATCH | Modifier partiel| PATCH /users/123 | 
+    | DELETE | Supprimer | DELETE /users/123 | 
+    </Card> 
+</Cards>
+
+## Le fichier router.js
+
+Le fichier ```router.js``` est le fichier principal de routage. Il contient la configuration de l'application et permet de définir les différentes routes de l'API.
+
+```js
+import { Router } from 'express';
+
+const router = Router();
+
+router.get('/', (req, res) => {
+  res.json({ 
+    status: 200,
+    message: '🚀 API opérationnelle!'
+  });
+});
+
+export default router;
+```
+
+**Explications du code**
+
+- Le fichier ```router.js``` est importé dans le fichier ```index.js``` pour permettre de **l'utiliser dans le fichier ```index.js```**.
+- La variable ```router``` est importée depuis le module ```express``` pour permettre de **créer une instance de ```Router```**.
+- La méthode ```get``` est utilisée pour définir une route GET pour l'application. Elle prend deux paramètres : ```req``` et ```res```. Le paramètre ```req``` est un objet qui contient **les informations de la requête HTTP**, et le paramètre ```res``` est un objet qui contient **les informations de la réponse HTTP**.
+- La méthode ```json``` est utilisée pour **convertir le résultat de la route en un objet JSON**.
+
+Il y a aussi le status **HTTP 200 (OK)** qui est renvoyé à l'utilisateur, et **un message** qui indique que l'API est opérationnelle.
+
+
+## Router pour les utilisateurs
+
+Le fichier ```router.js``` contient la configuration de l'application et permet de définir les différentes routes de l'API. Dans cet exemple, nous avons défini une route pour l'application qui pointe vers la route ```/api/users```.
+
+```js
+import { Router } from 'express';
+import AddUser from './add.js'; // [!code ++]
+import DeleteUser from './delete.js'; // [!code ++]
+import EditUser from './edit.js'; // [!code ++]
+import GetUser from './get.js'; // [!code ++]
+import ListUsers from './list.js'; // [!code ++]
+
+const router = Router();
+
+router.post('/add', AddUser);  // [!code ++]
+router.delete('/delete', DeleteUser); // [!code ++]
+router.put('/edit', EditUser); // [!code ++]
+router.get('/get', GetUser); // [!code ++]
+router.get('/list', ListUsers); // [!code ++]
+
+export default router;
+```
+
+Dans notre routeur principal, nous avons défini une route GET pour l'application qui pointe vers la route ```/users```.
+
+```js
+import { Router } from 'express';
+import usersRouter from './users/router.js'; // Import de la route [!code ++]
+
+const router = Router();
+
+router.get('/', (req, res) => { // [!code --]
+  res.json({ // [!code --]
+    status: 200, // [!code --]
+    message: '🚀 API opérationnelle!' // [!code --]
+  }); // [!code --]
+}); // [!code --]
+
+router.use('/users', usersRouter); // [!code ++]
+
+export default router; 
+
+```
+
+
+<Callout type="info" title="Pourquoi importer la route ?">
+
+- Modularité : Modification d'une route sans impact global
+
+- Maintenabilité : Fichiers spécialisés par fonctionnalité
+
+- Évolutivité : Ajout facile de nouvelles ressources
+
+- Testabilité : Isolation des composants
+
+</Callout>

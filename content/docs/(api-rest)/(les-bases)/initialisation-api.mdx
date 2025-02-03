@@ -1,0 +1,123 @@
+---
+title: Initialisation du projet
+description: Initialisation du projet
+---
+
+Après avoir installé Node.js, et les dépendances, nous devons initialiser le projet.
+
+## Modifier le fichier package.json
+Nous allons modifié le fichier ```package.json``` pour modifier le type et aussi mettre par défaut les commandes ```start``` et ```dev``` :
+
+```json
+{
+  "name": "my-api",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs", // [!code --]
+  "type": "module", // [!code ++]
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js", // [!code ++]
+    "dev": "nodemon index.js", // [!code ++]
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "nodemon": "^3.1.9"
+  }
+}
+
+```
+
+<Callout type="info" title="Pourquoi utiliser `commonjs` et pas `module`?">
+
+Le commonjs est l'ancienne façon de faire, et le module est la nouvelle façon de faire. Le module est plus rapide et plus léger, mais il n'est pas compatible avec tous les navigateurs.
+</Callout>
+
+<Callout type="info" title="Pourquoi mettre les commandes `start` et `dev` ?">
+
+La commande ```start``` est utilisée pour démarrer le serveur en production, et la commande ```dev``` est utilisée pour démarrer le serveur en mode développement. Ainsi, j'ajoute ```nodemon index.js``` dans la commande ```dev``` pour que le serveur se recharge automatiquement lorsque je modifie le code.
+</Callout>
+
+
+## Créer le fichier index.js
+
+Créez un fichier ```index.js``` avec le contenu suivant :
+
+```js
+import express from 'express';
+import cors from 'cors';
+
+// Initialisation de l'app
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// Route de test
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK',
+    message: '🚀 API opérationnelle!'
+  });
+});
+
+// Démarrage du serveur
+app.listen(PORT, () => {
+  console.log(`Serveur actif sur http://localhost:${PORT}`);
+});
+```
+
+<Callout type="warning" title="Configuration avancée">
+
+C'est quoi le cross-origin (CORS) ? C'est une politique de sécurité qui empêche les requêtes HTTP provenant d'un domaine différent.
+
+Pour une sécurité optimale, configurez les origines autorisées et les méthodes HTTP autorisées :
+```js
+const corsOptions = {
+  origin: ['https://votre-domaine.com', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+};
+
+app.use(cors(corsOptions));
+```
+</Callout>
+
+
+### Explications du code
+
+- ```app.use(cors())``` : permet de configurer les options de cors pour l'application
+- ```app.use(express.json())``` : permet de définir le format de données JSON pour l'application
+- ```app.get('/', (req, res) => { ... })``` : permet de définir une route GET pour l'application
+- ```app.listen(PORT, () => { ... })``` : permet de définir le port et de démarrer l'application pour qu'elle soit opérationnelle sur le port spécifié sur le navigateur
+
+## Lancer le serveur
+
+Pour lancer le serveur, exécutez la commande suivante :
+
+```bash
+npm run dev
+```
+
+Vous devriez voir le message suivant :
+
+```bash
+Serveur actif sur http://localhost:3000
+```
+
+Vous pouvez maintenant accéder à votre API en utilisant l'URL suivante :
+
+```bash
+http://localhost:3000
+```
+
+<Callout type="error" title="Erreur de dépendances">
+
+Si vous avez des erreurs de dépendances, vous pouvez utiliser la commande ```npm install``` pour les réinstaller.   
+
+</Callout>
