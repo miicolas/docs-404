@@ -7,6 +7,7 @@ import {
 } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
+import Button from '@/app/components/ui/buttons';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -24,6 +25,9 @@ export default async function Page(props: {
       <DocsBody>
         <MDX components={{ ...defaultMdxComponents }} />
       </DocsBody>
+      <div className='mt-4'>
+        <Button/>
+      </div>
     </DocsPage>
   );
 }

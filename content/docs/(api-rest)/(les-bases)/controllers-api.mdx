@@ -1,0 +1,109 @@
+---
+title: Controllers 
+description: Les contrôleurs sont des fonctions qui contiennent la logique métier de l'application. Ils sont responsables de la gestion des requêtes et des réponses.
+---
+
+Les contrôleurs sont des fonctions qui contiennent la logique métier de l'application. Ils sont responsables de la gestion des requêtes et des réponses.
+
+## Pourquoi utiliser des contrôleurs ?
+
+<Cards>
+
+    <Card icon="🔗" title="Séparation des préoccupations">
+    Les contrôleurs permettent de séparer la logique métier de la logique de routage.
+    </Card>
+    <Card icon="📦" title="Modularité">
+    Les contrôleurs permettent de rendre l'application plus modulaire et plus facile à maintenir.
+    </Card>
+    <Card icon="🔒" title="Sécurité">
+    Les contrôleurs permettent de centraliser la logique métier et de la sécuriser.
+    </Card>
+</Cards>
+
+## Créer un contrôleur
+
+### Créer un fichier pour le contrôleur
+
+Créez un fichier ```user.js``` dans le dossier ```controllers``` :
+
+```js
+export default class UsersController {
+
+    static async getUsers() {
+        
+        const names = ['John', 'Jane', 'Bob'];
+        return { status: 200, message: 'getUsers', data: names };
+    }
+
+}
+```
+
+#### Explications du code
+
+- La classe ```UsersController``` est importée depuis le fichier ```user.js``` pour permettre de **l'utiliser dans le fichier ```list.js```**.
+- La méthode ```getUsers``` est utilisée pour **récupérer la liste des utilisateurs**.
+- La constante ```names``` est utilisée pour **définir une liste d'utilisateurs**.
+- Et nous retournons le résultat de la méthode ```getUsers``` en utilisant ```return```.
+
+
+### Créer une route pour récupérer un utilisateur
+
+Importez le contrôleur dans le fichier ```list.js``` :
+
+```js
+import UsersController from '../controllers/user.js'; // Import de la classe [!code ++]
+
+export default async function ListUsers(req, res) {
+    try{
+        const users = await UsersController.getUsers(); // [!code ++]
+        res.status(200).json(users); // [!code ++]
+    } catch (error) {
+        res.status(500).json({ 
+            status: 500,
+            message: '💥 Une erreur est survenue lors de la récupération des utilisateurs'
+        });
+    }
+}
+
+## Tester la route
+
+Pour tester la route, exécutez la commande suivante :
+
+```bash
+npm run dev
+```
+
+Vous pouvez maintenant accéder à votre API en utilisant l'URL suivante :
+
+```bash
+http://localhost:3000/api/users/list
+```
+
+Vous devriez voir le message suivant :
+
+```json 
+{
+  "status": 200,
+  "message": "getUsers",
+  "data": [
+    "John",
+    "Jane",
+    "Bob"
+  ]
+}
+```
+
+
+## Explications du code
+
+- La classe ```UsersController``` est importée depuis le fichier ```user.js``` pour permettre de **l'utiliser dans le fichier ```list.js```**.
+- La méthode ```getUsers``` est utilisée pour **récupérer la liste des utilisateurs**.
+- La méthode ```json``` est utilisée pour **convertir le résultat de la route en un objet JSON**.
+
+Il y a aussi le status **HTTP 200 (OK)** qui est renvoyé à l'utilisateur, et **un message** qui indique que l'API est opérationnelle.  
+
+
+## Pour aller plus loin
+
+Semaine prochaine, nous allons voir comment **créer des routes pour ajouter, modifier et supprimer des utilisateurs** avec une DATABASE ! 🚀
+```
