@@ -1,0 +1,86 @@
+---
+title : Introduction à la base de données avec une API REST
+description : Découvrez les fondamentaux des bases de données avec l'API REST, leur fonctionnement et leurs cas d'utilisation avec des exemples concrets.   
+---
+
+## Rôle fondamental des bases de données
+
+Les bases de données permettent de :
+- Stocker durablement les données
+- Optimiser l'accès aux informations
+- Maintenir l'intégrité des relations
+- Sécuriser les transactions
+
+<Callout type="info" title="Exemple API REST">
+  ```http
+  GET /api/products → SELECT * FROM products
+  POST /api/orders → INSERT INTO orders VALUES (...)
+  ```
+</Callout>
+
+
+## Types de bases de données
+
+Il existe 2 grandes familles de bases de données :
+
+<Cards> 
+    <Card icon="📈" title="Relationnelles (SQL)">
+    - Structure en tables liées - Exemples : MySQL, PostgreSQL - Schéma fixe 
+    ```sql CREATE TABLE users ( id INT PRIMARY KEY, name VARCHAR(50) ); ``` 
+    </Card> 
+    <Card icon="📊" title="Non-relationnelles (NoSQL)"> 
+    - Documents, graphes, clé-valeur - Exemples : MongoDB, Redis - Schéma flexible 
+    ```json { "_id": "507f1f77bcf86cd799439011", "name": "Jean", "orders": ["pizza", "salad"] } ``` 
+    </Card>
+</Cards>
+
+Nous allons nous concentrer sur les bases de données relationnelles qui fonctionnent en SQL. 
+
+Mais comme nous ne savons pas utiliser SQL, nous allons utiliser un outil qui s'appelle Prisma pour interagir avec la base de données.
+
+
+## Configuration de l'environnement
+
+
+### A quoi sert Laragon / Mamp ?
+
+Laragon et Mamp sont deux logiciels qui permettent de créer des environnements de développement pour les différentes plateformes. Ils permettent de créer des environnements de développement pour les différentes plateformes, y compris Windows, Mac et Linux. 
+
+Exemple d'utilisation : 
+
+- Créer une base de données
+- Créer un serveur web
+- Créer un serveur de messagerie
+
+<Cards>
+  <Card icon="🪟" title="Windows : Laragon">
+    1. Téléchargez <a href="https://laragon.org/download/" target="_blank">Laragon</a>  
+    2. Installez la version Full (Apache, MySQL, PHP)  
+    3. Lancez Laragon après installation
+    ```bash
+    # Vérification des ports :
+    MySQL → 3306
+    Apache → 80
+    ```
+  </Card>
+
+  <Card icon="🍎" title="MacOS : MAMP">
+    1. Téléchargez <a href="https://www.mamp.info/en/downloads/" target="_blank">MAMP</a>  
+    2. Installez la version gratuite  
+    3. Configurez les ports par défaut :
+    ```bash
+    MySQL → 8889
+    Apache → 8888
+    ```
+  </Card>
+</Cards>
+
+## Création de la base de données
+
+Une fois installé, nous devons créer une base de données. Pour cela, nous allons ouvrir Mamp/Laragon et aller dans database pour se qui utilise Laragon. 
+
+Ensuite vous allez créer une base de données. Pour cela, cliquez sur le bouton "Create Database" et entrez un nom pour votre base de données.
+
+Et c'est fini ! pour l'instant...
+
+
