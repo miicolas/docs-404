@@ -1,0 +1,204 @@
+---
+title: Prisma ORM 
+description: Prisma ORM est un ORM (Objet Relationnel Mapping) pour Node.js et TypeScript/JavaScript qui permet de manipuler des bases de données de manière simple et efficace.
+---
+
+L'utilité d'un ORM (Objet Relationnel Mapping) est de permettre de manipuler des bases de données de manière simple et efficace. Il permet de séparer les données de l'application de la structure de la base de données, ce qui permet de rendre le code plus modulaire et plus facile à maintenir.
+
+Il existe plusieurs ORM pour Node.js et TypeScript/JavaScript, mais Prisma est l'un des plus populaires. Il est basé sur le concept de modèle de données et permet de créer des modèles de données pour les bases de données de manière simple et efficace.
+
+## Installation
+
+Pour installer Prisma, vous pouvez utiliser la commande suivante :
+
+```package-install
+npm install prisma @prisma/client
+```
+
+## Utilisation
+
+Pour utiliser Prisma, vous devez d'abord initialiser un projet Prisma en utilisant la commande suivante :
+
+```bash
+npx prisma init
+```
+
+Une fois installé, vous pouvez voir qu'un dossier `prisma` a été créé dans votre projet. Dans ce dossier, vous trouverez un fichier `schema.prisma` qui contient la définition de votre modèle de données.
+
+Vous avez aussi un `.env` qui contient les informations de connexion à votre base de données, qui permet de relier Prisma à votre base de données.
+
+
+Le fichier `schema.prisma` ressemble à ceci :
+
+```prisma
+{
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+Nous, on utilise une base de données MySQL, donc on va changer le provider en `mysql` :
+
+```prisma
+{
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // [!code --]
+  provider = "mysql" // [!code ++]
+  url      = env("DATABASE_URL")
+}
+```
+
+<Callout type="info" title="Pourquoi utiliser `mysql` ?">
+
+La base de données MySQL est plus rapide et plus légère que la base de données PostgreSQL, mais elle n'est pas compatible avec tous les navigateurs. Aussi MySQL et Laragon ne supporte pas les bases de données POSTGRESQL.
+
+</Callout>
+
+## Environnements variables 
+
+Les environnements variables sont des variables d'environnement qui sont définies dans le terminal. Ils sont utilisés pour stocker des informations sensibles telles que les mots de passe, les clés API, etc.
+
+Ici nous avons défini une variable `DATABASE_URL` qui contient l'URL de la base de données. Cette variable est utilisée par Prisma pour se connecter à la base de données.
+
+Pour définir une variable d'environnement, nous devons nous rendre dans le fichier `.env` et ajouter la variable `DATABASE_URL` si elle n'existe pas :
+
+Pour Laragon :
+```bash
+DATABASE_URL="mysql://root@localhost:3306/{nom_de_la_base_de_donnees}"
+```
+
+Pour Mamp :
+```bash
+DATABASE_URL="mysql://root:root@localhost:8889/{nom_de_la_base_de_donnees}"
+```
+
+
+
+## Les Models de la base de données
+
+Les modèles de la base de données sont des objets qui représentent les tables de la base de données. Ils sont utilisés pour définir les relations entre les tables et pour définir les types de données des colonnes.
+
+Pour définir un modèle de la base de données, nous allons créer un fichier `schema.prisma` dans le dossier `prisma` de notre projet.
+
+Dans ce fichier, nous allons définir un modèle pour la table `users` :
+
+```prisma
+{
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User { // [!code ++]
+  id        Int      @id @default(autoincrement()) // [!code ++]
+  name      String // [!code ++]
+  email     String   @unique // [!code ++]
+  createdAt DateTime @default(now()) // [!code ++]
+  updatedAt DateTime @updatedAt // [!code ++]
+}
+```
+
+On a défini un modèle pour la table `users` avec les champs suivants :
+
+- `id` : l'identifiant unique de la table
+- `name` : le nom de l'utilisateur
+- `email` : l'adresse email de l'utilisateur
+- `createdAt` : l'heure de création de l'utilisateur
+- `updatedAt` : l'heure de modification de l'utilisateur
+
+<Cards>
+ <Card title="Pourquoi utiliser autoincrement() ?" icon="🤔"> 
+ 
+ La fonction `autoincrement()` est utilisée pour générer automatiquement un identifiant unique pour chaque enregistrement. Cela permet de garantir l'unicité des identifiants et de gérer les conflits d'identifiants.
+ 
+ </Card>
+
+ <Card title="Pourquoi utiliser unique ?" icon="🤔"> 
+ 
+ La fonction `unique` est utilisée pour définir que l'adresse email de l'utilisateur doit être unique dans la table. Cela permet de garantir l'unicité des adresses email et de gérer les conflits d'adresses email.
+ 
+ </Card>
+</Cards>
+
+Pour ensuite transferer les modifications de notre fichier `schema.prisma` vers la base de données, nous allons exécuter la commande suivante :
+
+
+```bash
+npx prisma migrate dev --name init
+```
+
+```bash
+npx prisma generate
+```
+Cette commande va générer le code JavaScript pour accéder à la base de données et à l'interface de programmation de la base de données.
+
+Et voilà, notre base de données est prête à être utilisée avec Prisma !
+
+
+## Utilisation de Prisma
+
+Dans notre Controller `user.js` nous allons importer Prisma et utiliser les fonctions générées par Prisma pour accéder à la base de données :
+
+```js
+import { PrismaClient } from '@prisma/client'; // [!code ++]
+
+const prisma = new PrismaClient(); // [!code ++]
+export default class UsersController {
+
+    static async getUsers() {
+        
+        const names = ['John', 'Jane', 'Bob']; // [!code --]
+        const users = await prisma.user.findMany(); // [!code ++]
+
+        return { status: 200, message: 'getUsers', data: users };
+    }
+
+}
+```
+
+<Callout type="warn" title="Attention il faut importer des données !">
+N'oubliez pas d'importer les données que vous souhaitez récupérer dans votre modèle de la base de données.
+</Callout>
+
+Dans ce code nous avons importé la classe `PrismaClient` qui permet de se connecter à la base de données. Ensuite, nous avons créé une instance de la classe `PrismaClient` et assigné la variable `prisma` à cette instance.
+
+Ensuite, nous avons utilisé la fonction `findMany()` de la classe `PrismaClient` pour récupérer tous les utilisateurs de la base de données.
+
+A la fin nous obtenons un objet JSON avec le status 200, le message `getUsers` et les données des utilisateurs qui proviennent de la base de données.
+
+### Utilisez Prisma Studio pour visualiser les données :
+
+```bash
+npx prisma studio
+```
+<Callout type="info" title="Bonnes pratiques"> 
+- Versionnez toujours vos migrations 
+- Utilisez des transactions pour les opérations complexes 
+- Profitez du type-safe pour éviter les erreurs 
+- Documentez vos modèles avec des commentaires 
+</Callout>
+
+
+## Tester la route
+
+Pour tester la route, exécutez la commande suivante :
+
+```bash
+npm run dev
+```
+
+Vous pouvez maintenant accéder à votre API en utilisant l'URL suivante :
+
+```bash
+http://localhost:3000/api/users/list
+```

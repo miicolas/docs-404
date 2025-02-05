@@ -1,26 +1,17 @@
-# docs-404
+# Docs 404 
 
-This is a Next.js application generated with
-[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
+Docs 404 est un site de documentation pour apprendre les technologies web et les bonnes pratiques de développement
 
-Run development server:
+## Contribuer à Docs 404
 
-```bash
-npm run dev
-# or
-pnpm dev
-# or
-yarn dev
-```
+Vous souhaitez contribuer à Docs 404 ?
 
-Open http://localhost:3000 with your browser to see the result.
+Tu peux contribuer de différentes manières :
 
-## Learn More
+- Contribue en Forkant le projet sur Github : [https://github.com/miicolas/docs-404](https://github.com/miicolas/docs-404)
+- Contribue en créant une issue : [https://github.com/miicolas/docs-404/issues](https://github.com/miicolas/docs-404/issues)
+- Contribue en créant une Pull Request : [https://github.com/miicolas/docs-404/pulls](https://github.com/miicolas/docs-404/pulls)
+- Contactez-moi sur via mon site web : [https://nicolas-becharat.com](https://nicolas-becharat.com)
 
-To learn more about Next.js and Fumadocs, take a look at the following
-resources:
+N'hésitez pas à consulter notre [guide de contribution](https://github.com/miicolas/docs-404).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Fumadocs](https://fumadocs.vercel.app) - learn about Fumadocs
