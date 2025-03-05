@@ -1,0 +1,82 @@
+---
+title: Tester avec Vue.js
+description: Apprenez à mettre en place des tests efficaces pour vos applications Vue.js afin de garantir leur qualité et leur fiabilité.
+---
+
+## Pourquoi tester vos applications Vue.js ?
+
+Les **tests** sont essentiels dans le développement Vue.js pour :
+
+- Garantir le bon fonctionnement des composants
+- Prévenir les régressions lors des modifications
+- Documenter le comportement attendu de l'application
+- Faciliter la maintenance à long terme
+
+## Types de tests pour Vue.js
+
+<Cards>
+<Card icon="🧪" title="Tests unitaires">
+  Testez des composants ou fonctions isolément
+</Card>
+<Card icon="🔄" title="Tests d'intégration">
+  Vérifiez les interactions entre plusieurs composants
+</Card>
+<Card icon="🖥️" title="Tests end-to-end">
+  Testez l'application comme un utilisateur réel
+</Card>
+</Cards>
+
+## Tests unitaires avec Vue Test Utils
+
+Vue fournit une bibliothèque officielle, **Vue Test Utils**, pour faciliter les tests unitaires :
+
+```js
+import { mount } from '@vue/test-utils'
+import MonComposant from './MonComposant.vue'
+
+test('affiche le message correct', () => {
+  // Monter le composant
+  const wrapper = mount(MonComposant, {
+    props: {
+      message: 'Bonjour les tests !'
+    }
+  })
+
+  // Vérifier que le texte est correct
+  expect(wrapper.text()).toContain('Bonjour les tests !')
+  
+  // Simuler un clic sur un bouton
+  wrapper.find('button').trigger('click')
+  
+  // Vérifier que l'événement a été émis
+  expect(wrapper.emitted('action')).toBeTruthy()
+})
+```
+
+## Tests end-to-end avec Cypress
+
+**Cypress** est un excellent outil pour les tests end-to-end des applications Vue.js :
+
+```js
+describe('Application Todo', () => {
+  it('permet d\'ajouter une nouvelle tâche', () => {
+    // Visiter l'application
+    cy.visit('/')
+    
+    // Saisir une nouvelle tâche
+    cy.get('.nouvelle-tache')
+      .type('Apprendre à tester Vue{enter}')
+    
+    // Vérifier que la tâche a été ajoutée
+    cy.get('.liste-taches li')
+      .should('contain', 'Apprendre à tester Vue')
+  })
+})
+```
+
+## Conseils pour des tests efficaces
+
+- **Testez les comportements, pas l'implémentation** : Concentrez-vous sur ce que l'utilisateur verra et fera
+- **Utilisez des snapshots avec parcimonie** : Ils peuvent être fragiles et difficiles à maintenir
+- **Simulez les dépendances externes** : API, services, etc.
+- **Intégrez les tests dans votre CI/CD** : Exécutez-les automatiquement à chaque changement 

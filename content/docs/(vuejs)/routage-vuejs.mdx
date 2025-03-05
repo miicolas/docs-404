@@ -1,0 +1,246 @@
+---
+title: Routage avec Vue Router
+description: Apprenez à créer des applications à pages multiples avec Vue Router, la solution officielle de routage pour Vue.js.
+---
+
+## Introduction à Vue Router
+
+**Vue Router** est la bibliothèque de routage officielle pour Vue.js :
+
+- Permet de créer des applications à pages multiples (SPA)
+- Gère la navigation sans rechargement de page
+- Offre des fonctionnalités avancées comme les routes imbriquées, les transitions et la protection des routes
+
+## Installation de Vue Router
+
+```bash
+# Pour Vue 3
+npm install vue-router@4
+
+# Pour Vue 2
+npm install vue-router@3
+```
+
+## Configuration de base
+
+Dans un projet Vue, créez un fichier `router/index.js` :
+
+```js
+import { createRouter, createWebHistory } from 'vue-router'
+import Accueil from '../views/Accueil.vue'
+import APropos from '../views/APropos.vue'
+
+// Définition des routes
+const routes = [
+  {
+    path: '/',
+    name: 'accueil',
+    component: Accueil
+  },
+  {
+    path: '/a-propos',
+    name: 'a-propos',
+    component: APropos
+  }
+]
+
+// Création du routeur
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+export default router
+```
+
+Intégration dans l'application (`main.js`) :
+
+```js
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+
+createApp(App)
+  .use(router)
+  .mount('#app')
+```
+
+## Composant principal avec router-view
+
+Dans `App.vue` :
+
+```vue
+<template>
+  <div id="app">
+    <nav>
+      <router-link to="/">Accueil</router-link> |
+      <router-link to="/a-propos">À propos</router-link>
+    </nav>
+    
+    <!-- Les composants correspondant à la route s'affichent ici -->
+    <router-view></router-view>
+  </div>
+</template>
+```
+
+## Navigation entre les routes
+
+<Cards>
+<Card icon="🔗" title="Liens déclaratifs">
+  Utilisez `<router-link>` pour naviguer sans recharger la page
+</Card>
+<Card icon="🧭" title="Navigation programmatique">
+  Utilisez `router.push()` et autres méthodes pour naviguer par code
+</Card>
+</Cards>
+
+### Navigation déclarative
+
+```vue
+<!-- Lien simple -->
+<router-link to="/utilisateurs">Utilisateurs</router-link>
+
+<!-- Avec nom de route -->
+<router-link :to="{ name: 'utilisateur', params: { id: 123 }}">
+  Voir l'utilisateur
+</router-link>
+
+<!-- Avec classes actives personnalisées -->
+<router-link 
+  to="/blog" 
+  active-class="lien-actif"
+  exact-active-class="lien-exact-actif">
+  Blog
+</router-link>
+```
+
+### Navigation programmatique
+
+```js
+// Dans les méthodes d'un composant
+methods: {
+  allerALAccueil() {
+    this.$router.push('/')
+  },
+  
+  voirUtilisateur(id) {
+    this.$router.push({
+      name: 'utilisateur',
+      params: { id }
+    })
+  },
+  
+  retourPage() {
+    this.$router.back()
+  }
+}
+```
+
+## Routes dynamiques et paramètres
+
+Définition des routes avec paramètres :
+
+```js
+const routes = [
+  {
+    path: '/utilisateur/:id',
+    name: 'utilisateur',
+    component: Utilisateur
+  }
+]
+```
+
+Accès aux paramètres dans le composant :
+
+```vue
+<script>
+export default {
+  created() {
+    console.log(this.$route.params.id)
+  },
+  computed: {
+    utilisateurId() {
+      return this.$route.params.id
+    }
+  }
+}
+</script>
+```
+
+Avec la Composition API :
+
+```vue
+<script setup>
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+console.log(route.params.id)
+</script>
+```
+
+## Routes imbriquées
+
+```js
+const routes = [
+  {
+    path: '/utilisateurs',
+    component: Utilisateurs,
+    children: [
+      { path: '', component: ListeUtilisateurs },
+      { path: ':id', component: DetailUtilisateur }
+    ]
+  }
+]
+```
+
+## Protection des routes avec les guards
+
+Les guards sont des hooks qui permettent de contrôler la navigation :
+
+```js
+// Guard global avant chaque navigation
+router.beforeEach((to, from, next) => {
+  // Vérifier si l'utilisateur est connecté
+  const estAuthentifie = localStorage.getItem('token')
+  
+  // Si la route requiert une authentification
+  if (to.meta.requiertAuth && !estAuthentifie) {
+    // Rediriger vers la page de connexion
+    next('/connexion')
+  } else {
+    // Autoriser la navigation
+    next()
+  }
+})
+
+// Configuration des routes avec méta-données
+const routes = [
+  {
+    path: '/profil',
+    name: 'profil',
+    component: Profil,
+    meta: { requiertAuth: true }
+  }
+]
+```
+
+## Transitions entre les routes
+
+```vue
+<template>
+  <div id="app">
+    <transition name="fade" mode="out-in">
+      <router-view></router-view>
+    </transition>
+  </div>
+</template>
+
+<style>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>
+``` 

@@ -1,0 +1,59 @@
+---
+title: Concepts
+description: Vue.js est un framework JavaScript progressif pour construire des interfaces utilisateur. Il est conçu pour être adopté de manière incrémentale et peut être intégré facilement dans d'autres projets.
+---
+
+### C'est quoi Vue.js ?
+
+**Vue.js** est comme un chef d'orchestre 🎭 pour votre interface utilisateur :
+
+Vous déclarez ce que vous voulez voir **(template)** → Vue réagit aux changements de données → L'interface se met à jour automatiquement **(rendu réactif)**.
+
+**Exemple concret :**
+
+```html
+<div id="app">
+  <p>Compteur : {{ compteur }}</p>
+  <button @click="incrementer">Augmenter</button>
+</div>
+
+<script>
+  Vue.createApp({
+    data() {
+      return {
+        compteur: 0
+      }
+    },
+    methods: {
+      incrementer() {
+        this.compteur++
+      }
+    }
+  }).mount('#app')
+</script>
+```
+
+### Pourquoi Vue.js ?
+
+<Cards>
+<Card icon="⚡️" title="Réactivité"> Met à jour automatiquement le DOM quand vos données changent </Card> 
+<Card icon="🧩" title="Approche par composants"> Structurez votre application en blocs réutilisables </Card> 
+</Cards>
+<br/>
+
+**Cas d'usage réel :**
+Une application de liste de tâches qui réagit instantanément aux interactions utilisateur :
+```html
+<div id="todo-app">
+  <input v-model="nouvelleTache" @keyup.enter="ajouterTache">
+  <ul>
+    <li v-for="tache in taches" :key="tache.id">{{ tache.texte }}</li>
+  </ul>
+</div>
+```
+
+### Avantages de Vue.js
+<Cards> 
+<Card title="Facilité d'apprentissage"> Syntaxe intuitive et documentation de qualité </Card> 
+<Card title="Performance"> DOM virtuel optimisé et rendu efficace ```js const app = Vue.createApp({}) ``` </Card> 
+</Cards> 

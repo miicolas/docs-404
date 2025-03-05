@@ -1,0 +1,174 @@
+---
+title: Vue.js vs React
+description: Découvrez les différences, similitudes, avantages et inconvénients entre Vue.js et React pour vous aider à choisir le framework adapté à vos besoins.
+---
+
+## Comparaison générale
+
+Vue.js et React sont deux des frameworks/bibliothèques JavaScript les plus populaires pour construire des interfaces utilisateur modernes.
+
+<Cards>
+<Card icon="🔄" title="Philosophie">
+  **Vue.js** : Framework progressif, adoptable graduellement  
+  **React** : Bibliothèque déclarative, orientée composants
+</Card>
+<Card icon="📊" title="Popularité">
+  **Vue.js** : Très populaire, mais moins que React  
+  **React** : Leader du marché, écosystème plus vaste
+</Card>
+<Card icon="🏢" title="Support">
+  **Vue.js** : Projet indépendant dirigé par Evan You  
+  **React** : Maintenu par Facebook/Meta
+</Card>
+</Cards>
+
+## Syntaxe et structure des composants
+
+### Vue.js : Organisation en un seul fichier
+
+```vue
+<template>
+  <div class="compteur">
+    <p>Compteur : {{ compteur }}</p>
+    <button @click="incrementer">Augmenter</button>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      compteur: 0
+    }
+  },
+  methods: {
+    incrementer() {
+      this.compteur++
+    }
+  }
+}
+</script>
+
+<style scoped>
+.compteur {
+  padding: 1rem;
+  border: 1px solid #ccc;
+}
+</style>
+```
+
+### React : JSX et séparation du style
+
+```jsx
+import React, { useState } from 'react';
+import './Compteur.css';
+
+function Compteur() {
+  const [compteur, setCompteur] = useState(0);
+  
+  function incrementer() {
+    setCompteur(compteur + 1);
+  }
+  
+  return (
+    <div className="compteur">
+      <p>Compteur : {compteur}</p>
+      <button onClick={incrementer}>Augmenter</button>
+    </div>
+  );
+}
+
+export default Compteur;
+```
+
+## Réactivité et gestion de l'état
+
+<Cards>
+<Card icon="⚡️" title="Système de réactivité">
+  **Vue.js** : Système de réactivité automatique basé sur la détection des propriétés  
+  **React** : Basé sur l'immutabilité et des hooks comme useState
+</Card>
+<Card icon="🏪" title="Gestion d'état">
+  **Vue.js** : Vuex/Pinia comme solutions officielles  
+  **React** : Beaucoup d'options (Redux, MobX, Zustand, Recoil, Context API)
+</Card>
+</Cards>
+
+### Exemple de réactivité
+
+**Vue.js** : La réactivité est automatique
+```js
+// Vue.js avec la Composition API
+import { ref } from 'vue'
+
+const compteur = ref(0)
+// La mise à jour est automatiquement détectée
+compteur.value++
+```
+
+**React** : La réactivité est explicite
+```js
+// React avec Hooks
+import { useState } from 'react'
+
+const [compteur, setCompteur] = useState(0)
+// Il faut explicitement appeler un setter
+setCompteur(compteur + 1)
+```
+
+## Comparaison des performances
+
+Les performances des deux frameworks sont comparables pour la plupart des applications :
+
+- **Vue.js** : DOM virtuel optimisé, moins d'overhead pour les petites applications
+- **React** : Bien optimisé, offre d'excellentes performances avec des fonctionnalités comme React Fiber
+
+## Courbe d'apprentissage
+
+<Cards>
+<Card icon="📈" title="Vue.js">
+  **Facilité** : Plus facile à apprendre pour les débutants  
+  **Documentation** : Claire, complète et bien organisée  
+  **Conventionnel** : Approche plus opiniâtre sur la structure
+</Card>
+
+<Card icon="📉" title="React">
+  **Complexité** : Nécessite de bien comprendre JavaScript moderne  
+  **Documentation** : Bonne mais parfois moins directe  
+  **Flexible** : Très flexible, mais nécessite plus de décisions
+</Card>
+</Cards>
+
+## Écosystème et communauté
+
+<div className="my-table">
+| Aspect | Vue.js | React |
+|--------|---------|-------|
+| **Taille de la communauté** | Grande | Très grande |
+| **Bibliothèques tierces** | Nombreuses | Abondantes |
+| **Offres d'emploi** | Bonnes | Excellentes |
+| **Support d'entreprises** | Alibaba, Nintendo | Facebook, Instagram, WhatsApp |
+</div>
+
+## Quand choisir Vue.js ?
+
+- **Pour les débutants** : Plus facile à apprendre et à adopter
+- **Pour les projets progressifs** : Peut être intégré graduellement dans une application
+- **Pour les équipes petites à moyennes** : Structure plus conventionnelle, moins de décisions à prendre
+- **Si vous préférez une approche tout-en-un** : Template, logique et style dans un seul fichier
+
+## Quand choisir React ?
+
+- **Pour les grandes applications** : Écosystème plus robuste pour les applications complexes
+- **Pour l'employabilité** : Plus d'offres d'emploi disponibles
+- **Pour les équipes expérimentées** : Flexibilité maximale dans l'organisation du code
+- **Si vous aimez les solutions fonctionnelles** : Approche fonctionnelle à la programmation
+
+## En résumé
+
+**Vue.js** et **React** sont tous deux d'excellents choix pour le développement d'applications web modernes :
+
+- **Vue.js** brille par sa simplicité, sa clarté et sa capacité à être adopté progressivement
+- **React** excelle par sa flexibilité, son écosystème mature et son adoption généralisée
+
+Le choix entre les deux dépend souvent davantage des préférences personnelles, de l'équipe et du contexte spécifique du projet que des différences techniques fondamentales. 

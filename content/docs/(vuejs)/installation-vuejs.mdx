@@ -1,0 +1,132 @@
+---
+title: Installation et configuration
+description: Découvrez les différentes méthodes pour installer Vue.js et configurer votre premier projet.
+---
+
+## Méthodes d'installation de Vue.js
+
+Il existe plusieurs façons d'intégrer Vue.js dans vos projets :
+
+<Cards>
+<Card icon="📦" title="CDN">
+  Solution rapide pour prototyper ou petits projets
+</Card>
+<Card icon="⚡️" title="Vue CLI">
+  Outil officiel pour créer des projets complets
+</Card>
+<Card icon="🔥" title="Vite">
+  Outil de build ultra-rapide (recommandé)
+</Card>
+</Cards>
+
+## Installation via CDN
+
+La méthode la plus simple pour débuter avec Vue.js :
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Premier pas avec Vue</title>
+</head>
+<body>
+  <div id="app">
+    {{ message }}
+  </div>
+
+  <!-- Charger Vue depuis un CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  
+  <script>
+    const { createApp } = Vue
+    
+    createApp({
+      data() {
+        return {
+          message: 'Bonjour depuis Vue !'
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>
+```
+
+## Installation avec Vue CLI
+
+Pour les projets plus complexes, utilisez Vue CLI :
+
+```bash
+# Installation globale de Vue CLI
+npm install -g @vue/cli
+
+# Création d'un nouveau projet
+vue create mon-projet-vue
+
+# Démarrer le serveur de développement
+cd mon-projet-vue
+npm run serve
+```
+
+## Installation avec Vite (Recommandé)
+
+Vite offre une expérience de développement ultra-rapide :
+
+```bash
+# Création d'un projet Vue avec Vite
+npm create vite@latest mon-app -- --template vue
+
+# Installation des dépendances
+cd mon-app
+npm install
+
+# Démarrer le serveur de développement
+npm run dev
+```
+
+## Structure d'un projet Vue.js
+
+Un projet Vue.js typique créé avec Vue CLI ou Vite contient :
+
+```
+mon-projet-vue/
+├── node_modules/        # Dépendances
+├── public/              # Fichiers statiques
+├── src/                 # Code source
+│   ├── assets/          # Images, polices, etc.
+│   ├── components/      # Composants Vue
+│   ├── views/           # Pages (composants de niveau supérieur)
+│   ├── App.vue          # Composant racine
+│   └── main.js          # Point d'entrée
+├── .gitignore           # Fichiers ignorés par Git
+├── package.json         # Dépendances et scripts
+└── vite.config.js       # Configuration Vite
+```
+
+## Personnalisation de la configuration
+
+Vue.js offre plusieurs options de personnalisation :
+
+- **Vue CLI** : Utilisez `vue.config.js` à la racine du projet
+- **Vite** : Configurez dans `vite.config.js`
+
+Exemple de configuration Vite :
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  server: {
+    port: 3000
+  }
+})
+``` 
