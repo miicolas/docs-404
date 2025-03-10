@@ -1,0 +1,272 @@
+---
+title: Les Composants React
+description: Découvrez les fondamentaux des composants React, les blocs de construction essentiels de toute application React.
+---
+
+# Les Composants React
+
+Les composants sont les blocs de construction fondamentaux de toute application React. Un composant est une partie réutilisable de l'interface utilisateur qui encapsule sa propre logique et son apparence.
+
+## Qu'est-ce qu'un composant ?
+
+Un composant React est une fonction JavaScript qui :
+- Accepte des entrées (appelées "props")
+- Retourne des éléments React (JSX) décrivant ce qui doit être affiché à l'écran
+
+## Création d'un composant simple
+
+Voici un exemple de composant basique :
+
+```jsx
+function Salutation() {
+  return <h1>Bonjour tout le monde !</h1>
+}
+```
+
+Pour utiliser ce composant :
+
+```jsx
+function App() {
+  return (
+    <div>
+      <Salutation />
+    </div>
+  )
+}
+```
+
+## Les composants avec props
+
+Les props permettent de passer des données à un composant :
+
+```jsx
+function Salutation(props) {
+  return <h1>Bonjour {props.nom} !</h1>
+}
+
+function App() {
+  return (
+    <div>
+      <Salutation nom="Alice" />
+      <Salutation nom="Bob" />
+    </div>
+  )
+}
+```
+
+### Destructuration des props
+
+Une façon plus moderne d'écrire les composants utilise la destructuration :
+
+```jsx
+function Salutation({ nom, age }) {
+  return (
+    <h1>
+      Bonjour {nom}, vous avez {age} ans !
+    </h1>
+  )
+}
+
+function App() {
+  return (
+    <div>
+      <Salutation nom="Alice" age={25} />
+    </div>
+  )
+}
+```
+
+## Les enfants (children)
+
+La prop spéciale `children` permet d'imbriquer des composants :
+
+```jsx
+function Carte({ children, titre }) {
+  return (
+    <div className="carte">
+      <h2>{titre}</h2>
+      {children}
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Carte titre="Information">
+      <p>Ceci est le contenu de la carte.</p>
+      <button>Cliquez-moi</button>
+    </Carte>
+  )
+}
+```
+
+## Organisation des composants
+
+### Composant dans un fichier séparé
+
+Il est recommandé de placer chaque composant dans son propre fichier :
+
+```jsx
+// src/composants/Bouton.jsx
+function Bouton({ texte, onClick }) {
+  return (
+    <button onClick={onClick}>
+      {texte}
+    </button>
+  )
+}
+
+export default Bouton
+```
+
+Pour l'utiliser :
+
+```jsx
+// src/App.jsx
+import Bouton from './composants/Bouton'
+
+function App() {
+  const handleClick = () => {
+    alert('Bouton cliqué !')
+  }
+
+  return (
+    <div>
+      <Bouton 
+        texte="Cliquez-moi" 
+        onClick={handleClick} 
+      />
+    </div>
+  )
+}
+```
+
+## Exercice pratique : Créer une carte de profil
+
+Créons un composant `CarteProfile` plus complexe :
+
+```jsx
+// src/composants/CarteProfile.jsx
+function CarteProfile({ utilisateur }) {
+  return (
+    <div className="carte-profile">
+      <img 
+        src={utilisateur.photo} 
+        alt={utilisateur.nom}
+        className="photo-profile" 
+      />
+      <h2>{utilisateur.nom}</h2>
+      <p>{utilisateur.description}</p>
+      <div className="stats">
+        <div>
+          <strong>{utilisateur.followers}</strong>
+          <span>Followers</span>
+        </div>
+        <div>
+          <strong>{utilisateur.following}</strong>
+          <span>Following</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default CarteProfile
+```
+
+Style associé :
+
+```css
+/* src/composants/CarteProfile.css */
+.carte-profile {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 300px;
+  text-align: center;
+}
+
+.photo-profile {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats strong {
+  font-size: 1.2em;
+  color: #333;
+}
+
+.stats span {
+  font-size: 0.8em;
+  color: #666;
+}
+```
+
+Utilisation du composant :
+
+```jsx
+// src/App.jsx
+import CarteProfile from './composants/CarteProfile'
+import './composants/CarteProfile.css'
+
+function App() {
+  const utilisateur = {
+    nom: "Marie Dupont",
+    photo: "https://via.placeholder.com/100",
+    description: "Développeuse React passionnée",
+    followers: 1234,
+    following: 567
+  }
+
+  return (
+    <div className="container">
+      <CarteProfile utilisateur={utilisateur} />
+    </div>
+  )
+}
+```
+
+## Bonnes pratiques
+
+1. **Nommage des composants**
+   - Utilisez la convention PascalCase (ex: `MonComposant`)
+   - Le nom doit être descriptif de sa fonction
+
+2. **Un composant, une responsabilité**
+   - Chaque composant doit avoir une seule responsabilité claire
+   - Si un composant devient trop complexe, divisez-le en sous-composants
+
+3. **Props**
+   - Donnez des noms clairs aux props
+   - Utilisez des valeurs par défaut quand c'est pertinent
+   - Documentez les props attendues
+
+4. **Organisation des fichiers**
+   - Un composant par fichier
+   - Groupez les composants liés dans des dossiers
+   - Gardez une structure de fichiers cohérente
+
+## Exercices pratiques
+
+1. Créez un composant `Bouton` personnalisable avec différentes variantes (primaire, secondaire, danger)
+2. Créez un composant `Liste` qui accepte un tableau d'éléments et les affiche
+3. Modifiez le composant `CarteProfile` pour ajouter des fonctionnalités (bouton suivre, liste de posts, etc.)
+
+## Prochaines étapes
+
+Dans le prochain chapitre, nous explorerons la gestion de l'état (state) et des événements dans React, qui sont essentiels pour rendre vos composants interactifs.
+
+N'oubliez pas de pratiquer en créant vos propres composants et en expérimentant avec différentes structures. La maîtrise des composants est fondamentale pour devenir un bon développeur React ! 

@@ -1,0 +1,672 @@
+---
+title: Projet Final - Todo List
+description: Créez une application complète de gestion de tâches en utilisant React et tous les concepts appris dans ce cours.
+---
+
+# Projet Final : Todo List
+
+Dans ce chapitre final, nous allons mettre en pratique tous les concepts appris en créant une application complète de gestion de tâches (Todo List). Cette application intégrera la gestion d'état, les formulaires, le styling, et plus encore.
+
+## Structure du Projet
+
+Commençons par créer la structure de notre projet :
+
+```bash
+todo-app/
+├── src/
+│   ├── components/
+│   │   ├── TodoList.jsx
+│   │   ├── TodoForm.jsx
+│   │   ├── TodoItem.jsx
+│   │   ├── TodoFilter.jsx
+│   │   └── TodoStats.jsx
+│   ├── hooks/
+│   │   └── useTodos.js
+│   ├── styles/
+│   │   └── Todo.module.css
+│   └── App.jsx
+```
+
+## Composants de l'Application
+
+### 1. Hook Personnalisé (useTodos.js)
+
+```jsx
+// src/hooks/useTodos.js
+import { useState, useEffect } from 'react'
+
+export function useTodos() {
+  const [todos, setTodos] = useState(() => {
+    const savedTodos = localStorage.getItem('todos')
+    return savedTodos ? JSON.parse(savedTodos) : []
+  })
+
+  const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos))
+  }, [todos])
+
+  const addTodo = (text) => {
+    setTodos(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        text,
+        completed: false,
+        createdAt: new Date().toISOString()
+      }
+    ])
+  }
+
+  const toggleTodo = (id) => {
+    setTodos(prev =>
+      prev.map(todo =>
+        todo.id === id
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      )
+    )
+  }
+
+  const deleteTodo = (id) => {
+    setTodos(prev => prev.filter(todo => todo.id !== id))
+  }
+
+  const editTodo = (id, newText) => {
+    setTodos(prev =>
+      prev.map(todo =>
+        todo.id === id
+          ? { ...todo, text: newText }
+          : todo
+      )
+    )
+  }
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed
+    if (filter === 'completed') return todo.completed
+    return true
+  })
+
+  const stats = {
+    total: todos.length,
+    active: todos.filter(todo => !todo.completed).length,
+    completed: todos.filter(todo => todo.completed).length
+  }
+
+  return {
+    todos: filteredTodos,
+    filter,
+    stats,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    editTodo,
+    setFilter
+  }
+}
+```
+
+### 2. Composant TodoForm
+
+```jsx
+// src/components/TodoForm.jsx
+import { useState } from 'react'
+import styles from '../styles/Todo.module.css'
+
+export function TodoForm({ onAdd }) {
+  const [text, setText] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (text.trim()) {
+      onAdd(text.trim())
+      setText('')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Ajouter une tâche..."
+        className={styles.input}
+      />
+      <button type="submit" className={styles.addButton}>
+        Ajouter
+      </button>
+    </form>
+  )
+}
+```
+
+### 3. Composant TodoItem
+
+```jsx
+// src/components/TodoItem.jsx
+import { useState } from 'react'
+import styles from '../styles/Todo.module.css'
+
+export function TodoItem({ todo, onToggle, onDelete, onEdit }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editText, setEditText] = useState(todo.text)
+
+  const handleEdit = () => {
+    if (editText.trim() !== todo.text) {
+      onEdit(todo.id, editText.trim())
+    }
+    setIsEditing(false)
+  }
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleEdit()
+    } else if (e.key === 'Escape') {
+      setEditText(todo.text)
+      setIsEditing(false)
+    }
+  }
+
+  return (
+    <li className={`${styles.item} ${todo.completed ? styles.completed : ''}`}>
+      <input
+        type="checkbox"
+        checked={todo.completed}
+        onChange={() => onToggle(todo.id)}
+        className={styles.checkbox}
+      />
+      
+      {isEditing ? (
+        <input
+          type="text"
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          onBlur={handleEdit}
+          onKeyDown={handleKeyPress}
+          className={styles.editInput}
+          autoFocus
+        />
+      ) : (
+        <span
+          onDoubleClick={() => setIsEditing(true)}
+          className={styles.text}
+        >
+          {todo.text}
+        </span>
+      )}
+
+      <div className={styles.actions}>
+        <button
+          onClick={() => setIsEditing(true)}
+          className={styles.editButton}
+        >
+          Modifier
+        </button>
+        <button
+          onClick={() => onDelete(todo.id)}
+          className={styles.deleteButton}
+        >
+          Supprimer
+        </button>
+      </div>
+    </li>
+  )
+}
+```
+
+### 4. Composant TodoFilter
+
+```jsx
+// src/components/TodoFilter.jsx
+import styles from '../styles/Todo.module.css'
+
+export function TodoFilter({ filter, onFilterChange }) {
+  return (
+    <div className={styles.filter}>
+      <button
+        className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`}
+        onClick={() => onFilterChange('all')}
+      >
+        Toutes
+      </button>
+      <button
+        className={`${styles.filterButton} ${filter === 'active' ? styles.active : ''}`}
+        onClick={() => onFilterChange('active')}
+      >
+        Actives
+      </button>
+      <button
+        className={`${styles.filterButton} ${filter === 'completed' ? styles.active : ''}`}
+        onClick={() => onFilterChange('completed')}
+      >
+        Terminées
+      </button>
+    </div>
+  )
+}
+```
+
+### 5. Composant TodoStats
+
+```jsx
+// src/components/TodoStats.jsx
+import styles from '../styles/Todo.module.css'
+
+export function TodoStats({ stats }) {
+  return (
+    <div className={styles.stats}>
+      <span>Total : {stats.total}</span>
+      <span>À faire : {stats.active}</span>
+      <span>Terminées : {stats.completed}</span>
+    </div>
+  )
+}
+```
+
+### 6. Composant TodoList
+
+```jsx
+// src/components/TodoList.jsx
+import { TodoItem } from './TodoItem'
+import styles from '../styles/Todo.module.css'
+
+export function TodoList({ todos, onToggle, onDelete, onEdit }) {
+  if (todos.length === 0) {
+    return (
+      <div className={styles.empty}>
+        Aucune tâche à afficher
+      </div>
+    )
+  }
+
+  return (
+    <ul className={styles.list}>
+      {todos.map(todo => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={onToggle}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
+      ))}
+    </ul>
+  )
+}
+```
+
+### 7. Composant App Principal
+
+```jsx
+// src/App.jsx
+import { TodoForm } from './components/TodoForm'
+import { TodoList } from './components/TodoList'
+import { TodoFilter } from './components/TodoFilter'
+import { TodoStats } from './components/TodoStats'
+import { useTodos } from './hooks/useTodos'
+import styles from './styles/Todo.module.css'
+
+export default function App() {
+  const {
+    todos,
+    filter,
+    stats,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    editTodo,
+    setFilter
+  } = useTodos()
+
+  return (
+    <div className={styles.container}>
+      <h1 className={styles.title}>Ma Liste de Tâches</h1>
+      
+      <TodoForm onAdd={addTodo} />
+      
+      <TodoFilter
+        filter={filter}
+        onFilterChange={setFilter}
+      />
+      
+      <TodoList
+        todos={todos}
+        onToggle={toggleTodo}
+        onDelete={deleteTodo}
+        onEdit={editTodo}
+      />
+      
+      <TodoStats stats={stats} />
+    </div>
+  )
+}
+```
+
+## Styles CSS
+
+```css
+/* src/styles/Todo.module.css */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.input:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.addButton {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.addButton:hover {
+  background-color: #2980b9;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox {
+  margin-right: 15px;
+  width: 20px;
+  height: 20px;
+}
+
+.text {
+  flex: 1;
+  font-size: 16px;
+}
+
+.completed .text {
+  text-decoration: line-through;
+  color: #7f8c8d;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.editButton,
+.deleteButton {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.editButton {
+  background-color: #f1c40f;
+  color: white;
+}
+
+.editButton:hover {
+  background-color: #f39c12;
+}
+
+.deleteButton {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.deleteButton:hover {
+  background-color: #c0392b;
+}
+
+.filter {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border: 2px solid #3498db;
+  background-color: white;
+  color: #3498db;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.filterButton:hover {
+  background-color: #f7f9fc;
+}
+
+.filterButton.active {
+  background-color: #3498db;
+  color: white;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px;
+  background-color: #f7f9fc;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.stats span {
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.empty {
+  text-align: center;
+  color: #7f8c8d;
+  padding: 20px;
+  font-style: italic;
+}
+
+.editInput {
+  flex: 1;
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  .form {
+    flex-direction: column;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+
+  .item {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+}
+```
+
+## Fonctionnalités Principales
+
+1. **Gestion des Tâches**
+   - Ajouter une nouvelle tâche
+   - Marquer une tâche comme terminée
+   - Modifier une tâche existante
+   - Supprimer une tâche
+
+2. **Filtrage**
+   - Afficher toutes les tâches
+   - Afficher uniquement les tâches actives
+   - Afficher uniquement les tâches terminées
+
+3. **Persistance des Données**
+   - Sauvegarde automatique dans le localStorage
+   - Restauration des données au chargement
+
+4. **Interface Responsive**
+   - Adaptation à différentes tailles d'écran
+   - Interactions fluides et intuitives
+
+## Améliorations Possibles
+
+1. **Authentification**
+   ```jsx
+   // Ajout d'un système d'authentification
+   function useAuth() {
+     const [user, setUser] = useState(null)
+     
+     const login = async (email, password) => {
+       // Logique d'authentification
+     }
+     
+     const logout = () => {
+       // Logique de déconnexion
+     }
+     
+     return { user, login, logout }
+   }
+   ```
+
+2. **Synchronisation avec un Backend**
+   ```jsx
+   // Ajout de la synchronisation avec une API
+   async function syncTodos(todos) {
+     try {
+       const response = await fetch('/api/todos', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(todos)
+       })
+       return await response.json()
+     } catch (error) {
+       console.error('Erreur de synchronisation:', error)
+     }
+   }
+   ```
+
+3. **Catégories et Tags**
+   ```jsx
+   // Ajout de catégories aux tâches
+   function addTodo(text, category) {
+     setTodos(prev => [
+       ...prev,
+       {
+         id: Date.now(),
+         text,
+         category,
+         completed: false,
+         createdAt: new Date().toISOString()
+       }
+     ])
+   }
+   ```
+
+4. **Dates d'échéance**
+   ```jsx
+   // Ajout de dates d'échéance
+   function TodoItem({ todo }) {
+     return (
+       <div>
+         <span>{todo.text}</span>
+         <time>
+           Échéance : {new Date(todo.dueDate).toLocaleDateString()}
+         </time>
+       </div>
+     )
+   }
+   ```
+
+## Exercices Pratiques
+
+1. **Ajoutez des Fonctionnalités**
+   - Système de priorités (haute, moyenne, basse)
+   - Sous-tâches imbriquées
+   - Partage de tâches
+
+2. **Améliorez l'Interface**
+   - Animations de transition
+   - Mode sombre/clair
+   - Drag and drop pour réorganiser les tâches
+
+3. **Optimisez les Performances**
+   - Mise en cache des données
+   - Chargement différé
+   - Optimisation des rendus
+
+## Conclusion
+
+Ce projet final met en pratique tous les concepts importants de React :
+- Gestion d'état avec hooks
+- Composants réutilisables
+- Formulaires contrôlés
+- Styling modulaire
+- Persistance des données
+- Interface responsive
+
+Vous pouvez maintenant utiliser ces connaissances pour créer vos propres applications React plus complexes ! 

@@ -1,0 +1,481 @@
+---
+title: Les Hooks Essentiels en React
+description: Découvrez les hooks fondamentaux de React comme useEffect, useRef, et useMemo pour créer des composants plus puissants.
+---
+
+# Les Hooks Essentiels en React
+
+Les hooks sont des fonctions spéciales qui permettent d'utiliser l'état et d'autres fonctionnalités de React dans les composants fonctionnels. Dans ce chapitre, nous allons explorer les hooks les plus importants au-delà de `useState`.
+
+## useEffect
+
+### Introduction à useEffect
+
+`useEffect` permet de gérer les effets secondaires dans vos composants :
+
+```jsx
+import { useState, useEffect } from 'react'
+
+function ExempleEffect() {
+  const [compte, setCompte] = useState(0)
+
+  useEffect(() => {
+    document.title = `Vous avez cliqué ${compte} fois`
+  }, [compte]) // Se déclenche quand compte change
+
+  return (
+    <button onClick={() => setCompte(compte + 1)}>
+      Cliquer ({compte})
+    </button>
+  )
+}
+```
+
+### Les Différents Cas d'Utilisation
+
+#### 1. Exécution à Chaque Rendu
+
+```jsx
+useEffect(() => {
+  console.log('Cet effet s'exécute à chaque rendu')
+}) // Pas de tableau de dépendances
+```
+
+#### 2. Exécution Une Seule Fois (Montage)
+
+```jsx
+useEffect(() => {
+  console.log('Cet effet s'exécute uniquement au montage')
+}, []) // Tableau de dépendances vide
+```
+
+#### 3. Exécution sur Changement de Dépendances
+
+```jsx
+function SuiviUtilisateur({ id }) {
+  const [utilisateur, setUtilisateur] = useState(null)
+
+  useEffect(() => {
+    const chargerUtilisateur = async () => {
+      const reponse = await fetch(`/api/utilisateurs/${id}`)
+      const donnees = await reponse.json()
+      setUtilisateur(donnees)
+    }
+
+    chargerUtilisateur()
+  }, [id]) // Se déclenche quand id change
+
+  if (!utilisateur) return <div>Chargement...</div>
+
+  return <div>Nom : {utilisateur.nom}</div>
+}
+```
+
+#### 4. Nettoyage (Cleanup)
+
+```jsx
+function Minuteur() {
+  const [secondes, setSecondes] = useState(0)
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setSecondes(s => s + 1)
+    }, 1000)
+
+    // Fonction de nettoyage
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [])
+
+  return <div>Secondes : {secondes}</div>
+}
+```
+
+## useRef
+
+### Accès aux Éléments DOM
+
+```jsx
+function ChampFocus() {
+  const inputRef = useRef(null)
+
+  const focusInput = () => {
+    inputRef.current.focus()
+  }
+
+  return (
+    <div>
+      <input ref={inputRef} type="text" />
+      <button onClick={focusInput}>Focus</button>
+    </div>
+  )
+}
+```
+
+### Stockage de Valeurs Persistantes
+
+```jsx
+function Compteur() {
+  const [compte, setCompte] = useState(0)
+  const rendusRef = useRef(0)
+  
+  useEffect(() => {
+    rendusRef.current += 1
+  })
+
+  return (
+    <div>
+      <p>Compte : {compte}</p>
+      <p>Nombre de rendus : {rendusRef.current}</p>
+      <button onClick={() => setCompte(c => c + 1)}>
+        Incrémenter
+      </button>
+    </div>
+  )
+}
+```
+
+## useMemo et useCallback
+
+### Optimisation avec useMemo
+
+```jsx
+function ListeTriee({ items, tri }) {
+  const itemsTries = useMemo(() => {
+    console.log('Tri des items...')
+    return [...items].sort(tri)
+  }, [items, tri]) // Recalcule uniquement si items ou tri change
+
+  return (
+    <ul>
+      {itemsTries.map(item => (
+        <li key={item.id}>{item.nom}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+### Optimisation avec useCallback
+
+```jsx
+function Parent() {
+  const [compte, setCompte] = useState(0)
+
+  const incrementer = useCallback(() => {
+    setCompte(c => c + 1)
+  }, []) // Fonction stable entre les rendus
+
+  return (
+    <div>
+      <Enfant onIncrement={incrementer} />
+      <p>Compte : {compte}</p>
+    </div>
+  )
+}
+
+const Enfant = React.memo(({ onIncrement }) => {
+  console.log('Rendu Enfant')
+  return <button onClick={onIncrement}>+1</button>
+})
+```
+
+## Exemple Pratique : Application de Notes
+
+```jsx
+function AppNotes() {
+  const [notes, setNotes] = useState([])
+  const [texte, setTexte] = useState('')
+  const [recherche, setRecherche] = useState('')
+  const inputRef = useRef(null)
+
+  // Effet pour charger les notes au démarrage
+  useEffect(() => {
+    const notesStockees = JSON.parse(localStorage.getItem('notes') || '[]')
+    setNotes(notesStockees)
+  }, [])
+
+  // Effet pour sauvegarder les notes
+  useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(notes))
+  }, [notes])
+
+  // Focus automatique sur l'input au montage
+  useEffect(() => {
+    inputRef.current.focus()
+  }, [])
+
+  // Filtrage optimisé des notes
+  const notesFiltrees = useMemo(() => {
+    return notes.filter(note =>
+      note.texte.toLowerCase().includes(recherche.toLowerCase())
+    )
+  }, [notes, recherche])
+
+  // Gestionnaire d'ajout de note optimisé
+  const ajouterNote = useCallback((e) => {
+    e.preventDefault()
+    if (texte.trim()) {
+      const nouvelleNote = {
+        id: Date.now(),
+        texte,
+        date: new Date().toISOString()
+      }
+      setNotes(notes => [...notes, nouvelleNote])
+      setTexte('')
+    }
+  }, [texte])
+
+  // Gestionnaire de suppression optimisé
+  const supprimerNote = useCallback((id) => {
+    setNotes(notes => notes.filter(note => note.id !== id))
+  }, [])
+
+  return (
+    <div className="app-notes">
+      <h1>Mes Notes</h1>
+
+      <div className="recherche">
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          value={recherche}
+          onChange={e => setRecherche(e.target.value)}
+        />
+      </div>
+
+      <form onSubmit={ajouterNote}>
+        <input
+          ref={inputRef}
+          type="text"
+          value={texte}
+          onChange={e => setTexte(e.target.value)}
+          placeholder="Nouvelle note..."
+        />
+        <button type="submit">Ajouter</button>
+      </form>
+
+      <ul>
+        {notesFiltrees.map(note => (
+          <li key={note.id}>
+            <span>{note.texte}</span>
+            <time>{new Date(note.date).toLocaleString()}</time>
+            <button onClick={() => supprimerNote(note.id)}>
+              Supprimer
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+Style associé :
+
+```css
+.app-notes {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.app-notes .recherche {
+  margin-bottom: 20px;
+}
+
+.app-notes input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.app-notes form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.app-notes form input {
+  flex: 1;
+}
+
+.app-notes button {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.app-notes button:hover {
+  background-color: #0052a3;
+}
+
+.app-notes ul {
+  list-style: none;
+  padding: 0;
+}
+
+.app-notes li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.app-notes li span {
+  flex: 1;
+}
+
+.app-notes li time {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.app-notes li button {
+  background-color: #dc3545;
+  padding: 4px 8px;
+  font-size: 0.8em;
+}
+```
+
+## Règles des Hooks
+
+1. **N'appelez les hooks qu'au niveau racine**
+   - Pas dans des conditions
+   - Pas dans des boucles
+   - Pas dans des fonctions imbriquées
+
+2. **N'appelez les hooks que depuis des composants React**
+   - Ou depuis des hooks personnalisés
+   - Pas depuis des fonctions JavaScript normales
+
+## Création de Hooks Personnalisés
+
+```jsx
+// Hook personnalisé pour gérer un formulaire
+function useFormulaire(valeursInitiales = {}) {
+  const [valeurs, setValeurs] = useState(valeursInitiales)
+  const [erreurs, setErreurs] = useState({})
+
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target
+    setValeurs(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }, [])
+
+  const handleSubmit = useCallback((e, onSubmit) => {
+    e.preventDefault()
+    const nouvellesErreurs = {}
+    
+    // Validation basique
+    Object.entries(valeurs).forEach(([cle, valeur]) => {
+      if (!valeur) {
+        nouvellesErreurs[cle] = 'Ce champ est requis'
+      }
+    })
+
+    setErreurs(nouvellesErreurs)
+
+    if (Object.keys(nouvellesErreurs).length === 0) {
+      onSubmit(valeurs)
+    }
+  }, [valeurs])
+
+  return {
+    valeurs,
+    erreurs,
+    handleChange,
+    handleSubmit
+  }
+}
+
+// Utilisation du hook personnalisé
+function Inscription() {
+  const {
+    valeurs,
+    erreurs,
+    handleChange,
+    handleSubmit
+  } = useFormulaire({
+    nom: '',
+    email: '',
+    motDePasse: ''
+  })
+
+  const soumettreFormulaire = (donnees) => {
+    console.log('Données soumises :', donnees)
+  }
+
+  return (
+    <form onSubmit={e => handleSubmit(e, soumettreFormulaire)}>
+      <div>
+        <label>Nom :</label>
+        <input
+          type="text"
+          name="nom"
+          value={valeurs.nom}
+          onChange={handleChange}
+        />
+        {erreurs.nom && <span>{erreurs.nom}</span>}
+      </div>
+
+      <div>
+        <label>Email :</label>
+        <input
+          type="email"
+          name="email"
+          value={valeurs.email}
+          onChange={handleChange}
+        />
+        {erreurs.email && <span>{erreurs.email}</span>}
+      </div>
+
+      <div>
+        <label>Mot de passe :</label>
+        <input
+          type="password"
+          name="motDePasse"
+          value={valeurs.motDePasse}
+          onChange={handleChange}
+        />
+        {erreurs.motDePasse && <span>{erreurs.motDePasse}</span>}
+      </div>
+
+      <button type="submit">S'inscrire</button>
+    </form>
+  )
+}
+```
+
+## Exercices Pratiques
+
+1. Créez un hook personnalisé `useLocalStorage` :
+   - Synchronisation automatique avec localStorage
+   - Gestion des erreurs
+   - Support de différents types de données
+
+2. Implémentez un système de thème sombre/clair :
+   - Hook personnalisé `useTheme`
+   - Persistance des préférences
+   - Transition fluide entre les thèmes
+
+3. Créez une application de blog :
+   - Chargement des articles avec useEffect
+   - Mise en cache avec useMemo
+   - Gestion des commentaires
+   - Système de likes
+
+## Conclusion
+
+Les hooks sont un outil puissant qui permet de réutiliser la logique d'état et d'effets entre les composants. La maîtrise des hooks essentiels comme `useEffect`, `useRef`, `useMemo` et `useCallback` est cruciale pour créer des applications React performantes et maintenables.
+
+Dans le prochain chapitre, nous explorerons le styling en React et comment créer des interfaces utilisateur attrayantes avec CSS. 

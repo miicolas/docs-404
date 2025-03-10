@@ -1,0 +1,641 @@
+---
+title: Les Formulaires en React
+description: Apprenez à créer et gérer des formulaires en React, de la validation à la soumission des données.
+---
+
+# Les Formulaires en React
+
+Les formulaires sont une partie essentielle de toute application web interactive. Dans ce chapitre, nous allons explorer comment créer, gérer et valider des formulaires en React.
+
+## Formulaires Contrôlés
+
+### Concept de Base
+
+Un formulaire contrôlé est un formulaire dont les valeurs sont gérées par l'état React :
+
+```jsx
+import { useState } from 'react'
+
+function FormulaireSimple() {
+  const [valeur, setValeur] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log('Valeur soumise :', valeur)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={valeur}
+        onChange={(e) => setValeur(e.target.value)}
+      />
+      <button type="submit">Envoyer</button>
+    </form>
+  )
+}
+```
+
+### Formulaire avec Plusieurs Champs
+
+```jsx
+function FormulaireContact() {
+  const [formData, setFormData] = useState({
+    nom: '',
+    email: '',
+    message: ''
+  })
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log('Données du formulaire :', formData)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="nom">Nom :</label>
+        <input
+          type="text"
+          id="nom"
+          name="nom"
+          value={formData.nom}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="email">Email :</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="message">Message :</label>
+        <textarea
+          id="message"
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
+        />
+      </div>
+
+      <button type="submit">Envoyer</button>
+    </form>
+  )
+}
+```
+
+## Validation de Formulaire
+
+### Validation Simple
+
+```jsx
+function FormulaireInscription() {
+  const [formData, setFormData] = useState({
+    nom: '',
+    email: '',
+    motDePasse: '',
+    confirmation: ''
+  })
+
+  const [erreurs, setErreurs] = useState({})
+
+  const validerFormulaire = () => {
+    const nouvellesErreurs = {}
+
+    if (!formData.nom) {
+      nouvellesErreurs.nom = 'Le nom est requis'
+    }
+
+    if (!formData.email) {
+      nouvellesErreurs.email = 'L\'email est requis'
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      nouvellesErreurs.email = 'L\'email n\'est pas valide'
+    }
+
+    if (!formData.motDePasse) {
+      nouvellesErreurs.motDePasse = 'Le mot de passe est requis'
+    } else if (formData.motDePasse.length < 6) {
+      nouvellesErreurs.motDePasse = 'Le mot de passe doit faire au moins 6 caractères'
+    }
+
+    if (formData.motDePasse !== formData.confirmation) {
+      nouvellesErreurs.confirmation = 'Les mots de passe ne correspondent pas'
+    }
+
+    setErreurs(nouvellesErreurs)
+    return Object.keys(nouvellesErreurs).length === 0
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (validerFormulaire()) {
+      console.log('Formulaire valide !')
+      // Traitement du formulaire...
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    // Effacer l'erreur quand l'utilisateur commence à corriger
+    if (erreurs[name]) {
+      setErreurs(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="form-inscription">
+      <div className="form-group">
+        <label htmlFor="nom">Nom :</label>
+        <input
+          type="text"
+          id="nom"
+          name="nom"
+          value={formData.nom}
+          onChange={handleChange}
+          className={erreurs.nom ? 'erreur' : ''}
+        />
+        {erreurs.nom && <span className="message-erreur">{erreurs.nom}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="email">Email :</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className={erreurs.email ? 'erreur' : ''}
+        />
+        {erreurs.email && <span className="message-erreur">{erreurs.email}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="motDePasse">Mot de passe :</label>
+        <input
+          type="password"
+          id="motDePasse"
+          name="motDePasse"
+          value={formData.motDePasse}
+          onChange={handleChange}
+          className={erreurs.motDePasse ? 'erreur' : ''}
+        />
+        {erreurs.motDePasse && (
+          <span className="message-erreur">{erreurs.motDePasse}</span>
+        )}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="confirmation">Confirmer le mot de passe :</label>
+        <input
+          type="password"
+          id="confirmation"
+          name="confirmation"
+          value={formData.confirmation}
+          onChange={handleChange}
+          className={erreurs.confirmation ? 'erreur' : ''}
+        />
+        {erreurs.confirmation && (
+          <span className="message-erreur">{erreurs.confirmation}</span>
+        )}
+      </div>
+
+      <button type="submit">S'inscrire</button>
+    </form>
+  )
+}
+```
+
+Style associé :
+
+```css
+.form-inscription {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.form-group input.erreur {
+  border-color: #dc3545;
+}
+
+.message-erreur {
+  color: #dc3545;
+  font-size: 0.8em;
+  margin-top: 5px;
+  display: block;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #0052a3;
+}
+```
+
+## Validation en Temps Réel
+
+```jsx
+function FormulaireTempsReel() {
+  const [formData, setFormData] = useState({
+    email: '',
+    motDePasse: ''
+  })
+
+  const [erreurs, setErreurs] = useState({})
+  const [estTouche, setEstTouche] = useState({})
+
+  const regles = {
+    email: {
+      required: true,
+      pattern: /\S+@\S+\.\S+/,
+      message: 'Email invalide'
+    },
+    motDePasse: {
+      required: true,
+      minLength: 6,
+      message: 'Mot de passe trop court'
+    }
+  }
+
+  const validerChamp = (name, value) => {
+    const regle = regles[name]
+    if (!regle) return ''
+
+    if (regle.required && !value) {
+      return 'Ce champ est requis'
+    }
+
+    if (regle.pattern && !regle.pattern.test(value)) {
+      return regle.message
+    }
+
+    if (regle.minLength && value.length < regle.minLength) {
+      return regle.message
+    }
+
+    return ''
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+
+    if (estTouche[name]) {
+      const erreur = validerChamp(name, value)
+      setErreurs(prev => ({
+        ...prev,
+        [name]: erreur
+      }))
+    }
+  }
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    setEstTouche(prev => ({
+      ...prev,
+      [name]: true
+    }))
+    const erreur = validerChamp(name, value)
+    setErreurs(prev => ({
+      ...prev,
+      [name]: erreur
+    }))
+  }
+
+  return (
+    <form className="form-temps-reel">
+      <div className="form-group">
+        <label htmlFor="email">Email :</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={erreurs.email ? 'erreur' : ''}
+        />
+        {estTouche.email && erreurs.email && (
+          <span className="message-erreur">{erreurs.email}</span>
+        )}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="motDePasse">Mot de passe :</label>
+        <input
+          type="password"
+          id="motDePasse"
+          name="motDePasse"
+          value={formData.motDePasse}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={erreurs.motDePasse ? 'erreur' : ''}
+        />
+        {estTouche.motDePasse && erreurs.motDePasse && (
+          <span className="message-erreur">{erreurs.motDePasse}</span>
+        )}
+      </div>
+    </form>
+  )
+}
+```
+
+## Gestion des Fichiers
+
+```jsx
+function FormulaireFichier() {
+  const [fichier, setFichier] = useState(null)
+  const [apercu, setApercu] = useState(null)
+
+  const handleFichierChange = (e) => {
+    const fichierSelectionne = e.target.files[0]
+    setFichier(fichierSelectionne)
+
+    // Créer un aperçu pour les images
+    if (fichierSelectionne && fichierSelectionne.type.startsWith('image/')) {
+      const lecteur = new FileReader()
+      lecteur.onloadend = () => {
+        setApercu(lecteur.result)
+      }
+      lecteur.readAsDataURL(fichierSelectionne)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!fichier) return
+
+    const formData = new FormData()
+    formData.append('fichier', fichier)
+
+    try {
+      // Exemple d'envoi à un serveur
+      const reponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      const donnees = await reponse.json()
+      console.log('Fichier envoyé :', donnees)
+    } catch (erreur) {
+      console.error('Erreur lors de l\'envoi :', erreur)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="form-fichier">
+      <div className="zone-depot">
+        <input
+          type="file"
+          onChange={handleFichierChange}
+          accept="image/*"
+        />
+        {apercu && (
+          <img
+            src={apercu}
+            alt="Aperçu"
+            className="apercu-image"
+          />
+        )}
+      </div>
+      <button type="submit" disabled={!fichier}>
+        Envoyer
+      </button>
+    </form>
+  )
+}
+```
+
+## Hook Personnalisé pour les Formulaires
+
+```jsx
+function useFormulaire(valeursInitiales = {}) {
+  const [valeurs, setValeurs] = useState(valeursInitiales)
+  const [erreurs, setErreurs] = useState({})
+  const [estTouche, setEstTouche] = useState({})
+  const [estSoumis, setEstSoumis] = useState(false)
+
+  const reinitialiser = () => {
+    setValeurs(valeursInitiales)
+    setErreurs({})
+    setEstTouche({})
+    setEstSoumis(false)
+  }
+
+  const validerChamp = (name, value) => {
+    let erreur = ''
+
+    // Validation de base
+    if (value.required && !value) {
+      erreur = 'Ce champ est requis'
+    }
+
+    // Validation email
+    if (name === 'email' && value) {
+      const emailRegex = /\S+@\S+\.\S+/
+      if (!emailRegex.test(value)) {
+        erreur = 'Email invalide'
+      }
+    }
+
+    // Validation mot de passe
+    if (name === 'motDePasse' && value) {
+      if (value.length < 6) {
+        erreur = 'Le mot de passe doit faire au moins 6 caractères'
+      }
+    }
+
+    return erreur
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setValeurs(prev => ({
+      ...prev,
+      [name]: value
+    }))
+
+    if (estTouche[name]) {
+      const erreur = validerChamp(name, value)
+      setErreurs(prev => ({
+        ...prev,
+        [name]: erreur
+      }))
+    }
+  }
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    setEstTouche(prev => ({
+      ...prev,
+      [name]: true
+    }))
+    const erreur = validerChamp(name, value)
+    setErreurs(prev => ({
+      ...prev,
+      [name]: erreur
+    }))
+  }
+
+  const handleSubmit = (e, onSubmit) => {
+    e.preventDefault()
+    setEstSoumis(true)
+
+    // Valider tous les champs
+    const nouvellesErreurs = {}
+    Object.keys(valeurs).forEach(name => {
+      const erreur = validerChamp(name, valeurs[name])
+      if (erreur) {
+        nouvellesErreurs[name] = erreur
+      }
+    })
+
+    setErreurs(nouvellesErreurs)
+
+    if (Object.keys(nouvellesErreurs).length === 0) {
+      onSubmit(valeurs)
+    }
+  }
+
+  return {
+    valeurs,
+    erreurs,
+    estTouche,
+    estSoumis,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    reinitialiser
+  }
+}
+
+// Utilisation du hook
+function FormulaireConnexion() {
+  const {
+    valeurs,
+    erreurs,
+    estTouche,
+    handleChange,
+    handleBlur,
+    handleSubmit
+  } = useFormulaire({
+    email: '',
+    motDePasse: ''
+  })
+
+  const soumettreFormulaire = (donnees) => {
+    console.log('Connexion avec :', donnees)
+  }
+
+  return (
+    <form onSubmit={(e) => handleSubmit(e, soumettreFormulaire)}>
+      <div>
+        <label>Email :</label>
+        <input
+          type="email"
+          name="email"
+          value={valeurs.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+        />
+        {estTouche.email && erreurs.email && (
+          <span>{erreurs.email}</span>
+        )}
+      </div>
+
+      <div>
+        <label>Mot de passe :</label>
+        <input
+          type="password"
+          name="motDePasse"
+          value={valeurs.motDePasse}
+          onChange={handleChange}
+          onBlur={handleBlur}
+        />
+        {estTouche.motDePasse && erreurs.motDePasse && (
+          <span>{erreurs.motDePasse}</span>
+        )}
+      </div>
+
+      <button type="submit">Se connecter</button>
+    </form>
+  )
+}
+```
+
+## Exercices Pratiques
+
+1. Créez un formulaire d'inscription complet :
+   - Validation des champs en temps réel
+   - Gestion des erreurs
+   - Confirmation par email
+   - Messages de succès/erreur
+
+2. Implémentez un formulaire de paiement :
+   - Validation de carte bancaire
+   - Masquage des données sensibles
+   - Gestion des erreurs API
+   - Feedback utilisateur
+
+3. Créez un formulaire de recherche avancée :
+   - Filtres multiples
+   - Recherche en temps réel
+   - Pagination des résultats
+   - Historique des recherches
+
+## Conclusion
+
+La gestion des formulaires en React nécessite une bonne compréhension des composants contrôlés et des patterns de validation. L'utilisation de hooks personnalisés peut grandement simplifier la logique et la réutilisation du code.
+
+Dans le prochain chapitre, nous explorerons la gestion des routes avec React Router pour créer des applications multi-pages. 

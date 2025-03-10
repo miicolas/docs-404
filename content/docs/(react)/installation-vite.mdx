@@ -1,0 +1,296 @@
+---
+title: Installation avec Vite
+description: Apprenez à configurer votre premier projet React en utilisant Vite, un outil de build moderne et ultra-rapide.
+---
+
+# Installation de React avec Vite
+
+Dans ce chapitre, nous allons mettre en place un environnement de développement React en utilisant Vite, un outil de build moderne qui offre une expérience de développement exceptionnellement rapide.
+
+## Qu'est-ce que Vite ?
+
+**Vite** (prononcé "vit", qui signifie "rapide" en français) est un outil de build développé par Evan You, le créateur de Vue.js. Contrairement à des outils comme Create React App, Vite offre :
+
+- Un démarrage instantané du serveur de développement
+- Un rechargement à chaud ultra-rapide (HMR)
+- Une optimisation de production prête à l'emploi
+- Une configuration minimale pour démarrer
+
+## Prérequis
+
+Avant de commencer, assurez-vous d'avoir installé :
+
+- **Node.js** (version 14.18+ ou 16+)
+- **npm** (généralement installé avec Node.js)
+
+Vous pouvez vérifier vos versions avec :
+
+```bash
+node -v
+npm -v
+```
+
+## Création d'un projet React avec Vite
+
+Ouvrez votre terminal et exécutez la commande suivante :
+
+```bash
+npm create vite@latest mon-premier-react -- --template react
+```
+
+Cette commande :
+1. Utilise `create-vite` pour générer un nouveau projet
+2. Nomme votre projet `mon-premier-react`
+3. Spécifie le template `react` pour créer un projet React
+
+## Structure du projet généré
+
+Naviguez dans le répertoire de votre projet :
+
+```bash
+cd mon-premier-react
+```
+
+Examinons la structure des fichiers générés :
+
+```
+mon-premier-react/
+├── node_modules/       # Dépendances du projet (après installation)
+├── public/             # Fichiers statiques (favicon, etc.)
+├── src/                # Code source
+│   ├── assets/         # Images, polices, etc.
+│   ├── App.css         # Styles pour le composant App
+│   ├── App.jsx         # Composant principal
+│   ├── index.css       # Styles globaux
+│   ├── main.jsx        # Point d'entrée de l'application
+│   └── ...             # Autres fichiers générés
+├── .eslintrc.cjs       # Configuration ESLint
+├── .gitignore          # Fichiers à ignorer par Git
+├── index.html          # Page HTML principale
+├── package.json        # Dépendances et scripts
+├── package-lock.json   # Versions exactes des dépendances
+└── vite.config.js      # Configuration Vite
+```
+
+## Installation des dépendances
+
+Installons les dépendances du projet :
+
+```bash
+npm install
+```
+
+Cette commande télécharge et installe toutes les bibliothèques nécessaires définies dans `package.json`.
+
+## Démarrage du serveur de développement
+
+Lançons l'application :
+
+```bash
+npm run dev
+```
+
+Vous verrez un message dans votre terminal indiquant que le serveur est démarré, généralement sur `http://localhost:5173/`. Ouvrez cette URL dans votre navigateur pour voir votre application React en action !
+
+## Examen du code existant
+
+Analysons les fichiers importants générés par Vite :
+
+### 1. `index.html`
+
+C'est la page HTML racine de votre application :
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+```
+
+Notez la `<div id="root"></div>` où React "montera" votre application, et le script qui pointe vers `main.jsx`.
+
+### 2. `src/main.jsx`
+
+Le point d'entrée de l'application React :
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+```
+
+Ce fichier :
+- Importe les bibliothèques React nécessaires
+- Importe le composant `App` et les styles globaux
+- Crée un "root" React et y rend le composant `App`
+- Utilise `<React.StrictMode>` pour détecter les problèmes potentiels
+
+### 3. `src/App.jsx`
+
+Le composant principal de l'application :
+
+```jsx
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
+}
+
+export default App
+```
+
+Ce composant :
+- Utilise le hook `useState` pour gérer un compteur
+- Rend une interface simple avec les logos de Vite et React
+- Inclut un bouton qui met à jour l'état du compteur
+
+## Personnalisation de base
+
+Modifions légèrement notre application pour la personnaliser. Ouvrez `src/App.jsx` et remplacez son contenu par :
+
+```jsx
+import { useState } from 'react'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="container">
+      <h1>Mon Premier Projet React avec Vite</h1>
+      <div className="card">
+        <p>Vous avez cliqué {count} fois sur le bouton</p>
+        <button onClick={() => setCount(count + 1)}>
+          Cliquez-moi
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default App
+```
+
+Puis, modifiez `src/App.css` pour le style :
+
+```css
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1 {
+  color: #646cff;
+  margin-bottom: 2rem;
+}
+
+.card {
+  padding: 2rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  padding: 0.6em 1.2em;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+
+button:hover {
+  background-color: #535bf2;
+}
+```
+
+Enfin, simplifiez `src/index.css` pour ne garder que les styles de base :
+
+```css
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  color: #213547;
+  background-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+}
+```
+
+Sauvegardez ces fichiers et observez les changements en temps réel dans votre navigateur grâce au rechargement à chaud (HMR) de Vite.
+
+## Scripts disponibles
+
+Votre `package.json` contient plusieurs scripts utiles :
+
+- `npm run dev` : Lance le serveur de développement
+- `npm run build` : Construit l'application pour la production dans le dossier `dist`
+- `npm run lint` : Exécute ESLint pour trouver les problèmes de code
+- `npm run preview` : Lance un serveur local pour prévisualiser la version construite
+
+## Prochaines étapes
+
+Félicitations ! Vous avez maintenant un projet React fonctionnel configuré avec Vite. Dans le prochain chapitre, nous explorerons plus en détail les composants React et comment les structurer efficacement.
+
+N'hésitez pas à expérimenter avec le code existant pour vous familiariser avec l'environnement. La pratique est la clé pour bien comprendre React ! 

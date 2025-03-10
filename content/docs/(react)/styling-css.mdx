@@ -1,0 +1,521 @@
+---
+title: Styling en React avec CSS
+description: Découvrez les différentes approches pour styler vos composants React, du CSS classique aux solutions modernes comme les CSS Modules et Styled Components.
+---
+
+# Styling en React avec CSS
+
+Le styling est un aspect crucial du développement d'applications React. Dans ce chapitre, nous explorerons les différentes approches pour styler vos composants, des méthodes traditionnelles aux solutions modernes.
+
+## CSS Classique
+
+### CSS Global
+
+La méthode la plus simple est d'importer un fichier CSS global :
+
+```css
+/* styles.css */
+.bouton {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bouton:hover {
+  background-color: #0052a3;
+}
+
+.carte {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px;
+}
+```
+
+```jsx
+// App.jsx
+import './styles.css'
+
+function App() {
+  return (
+    <div>
+      <div className="carte">
+        <h2>Ma Carte</h2>
+        <button className="bouton">Cliquer</button>
+      </div>
+    </div>
+  )
+}
+```
+
+### CSS Inline
+
+Le style inline utilise l'attribut `style` avec un objet JavaScript :
+
+```jsx
+function BoutonStyle() {
+  const style = {
+    padding: '8px 16px',
+    backgroundColor: '#0066cc',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  }
+
+  return (
+    <button 
+      style={style}
+      onClick={() => console.log('Cliqué !')}
+    >
+      Cliquer
+    </button>
+  )
+}
+```
+
+### Styles Dynamiques
+
+```jsx
+function BoutonDynamique({ type = 'primary' }) {
+  const getStyles = () => {
+    const baseStyle = {
+      padding: '8px 16px',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer'
+    }
+
+    const typeStyles = {
+      primary: {
+        backgroundColor: '#0066cc',
+        color: 'white'
+      },
+      secondary: {
+        backgroundColor: '#6c757d',
+        color: 'white'
+      },
+      danger: {
+        backgroundColor: '#dc3545',
+        color: 'white'
+      }
+    }
+
+    return { ...baseStyle, ...typeStyles[type] }
+  }
+
+  return (
+    <button style={getStyles()}>
+      Bouton {type}
+    </button>
+  )
+}
+```
+
+## CSS Modules
+
+Les CSS Modules permettent d'éviter les conflits de noms en créant des classes uniques :
+
+```css
+/* Bouton.module.css */
+.bouton {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bouton:hover {
+  background-color: #0052a3;
+}
+
+.grand {
+  font-size: 1.2em;
+  padding: 12px 24px;
+}
+```
+
+```jsx
+// Bouton.jsx
+import styles from './Bouton.module.css'
+
+function Bouton({ grand, children }) {
+  return (
+    <button 
+      className={`${styles.bouton} ${grand ? styles.grand : ''}`}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+## Styled Components
+
+Styled Components permet d'écrire du CSS directement dans vos composants JavaScript :
+
+```jsx
+import styled from 'styled-components'
+
+const BoutonStyle = styled.button`
+  padding: 8px 16px;
+  background-color: ${props => props.primary ? '#0066cc' : '#6c757d'};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: ${props => props.primary ? '#0052a3' : '#5a6268'};
+  }
+  
+  ${props => props.grand && `
+    font-size: 1.2em;
+    padding: 12px 24px;
+  `}
+`
+
+function Bouton({ primary, grand, children }) {
+  return (
+    <BoutonStyle primary={primary} grand={grand}>
+      {children}
+    </BoutonStyle>
+  )
+}
+```
+
+## Exemple Pratique : Interface de Blog
+
+```jsx
+// components/Blog.jsx
+import styles from './Blog.module.css'
+
+function Article({ titre, contenu, date, image }) {
+  return (
+    <article className={styles.article}>
+      <img 
+        src={image} 
+        alt={titre}
+        className={styles.image}
+      />
+      <div className={styles.contenu}>
+        <h2>{titre}</h2>
+        <time className={styles.date}>
+          {new Date(date).toLocaleDateString()}
+        </time>
+        <p>{contenu}</p>
+        <button className={styles.boutonLire}>
+          Lire la suite
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function Blog() {
+  const articles = [
+    {
+      id: 1,
+      titre: "Introduction à React",
+      contenu: "React est une bibliothèque JavaScript...",
+      date: "2024-03-15",
+      image: "/images/react.jpg"
+    },
+    // ... autres articles
+  ]
+
+  return (
+    <div className={styles.blog}>
+      <header className={styles.header}>
+        <h1>Mon Blog Tech</h1>
+        <nav className={styles.nav}>
+          <a href="#accueil">Accueil</a>
+          <a href="#articles">Articles</a>
+          <a href="#apropos">À propos</a>
+        </nav>
+      </header>
+
+      <main className={styles.principal}>
+        {articles.map(article => (
+          <Article key={article.id} {...article} />
+        ))}
+      </main>
+
+      <aside className={styles.sidebar}>
+        <h3>Articles Populaires</h3>
+        <ul>
+          {articles.map(article => (
+            <li key={article.id}>
+              {article.titre}
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </div>
+  )
+}
+```
+
+```css
+/* Blog.module.css */
+.blog {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+
+.header {
+  grid-column: 1 / -1;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav a:hover {
+  text-decoration: underline;
+}
+
+.principal {
+  grid-column: 1;
+}
+
+.sidebar {
+  grid-column: 2;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  align-self: start;
+  position: sticky;
+  top: 20px;
+}
+
+.article {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.contenu {
+  padding: 20px;
+}
+
+.date {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.boutonLire {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.boutonLire:hover {
+  background-color: #0052a3;
+}
+
+@media (max-width: 768px) {
+  .blog {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-column: 1;
+    position: static;
+  }
+}
+```
+
+## Thèmes et Variables CSS
+
+### Variables CSS (Custom Properties)
+
+```css
+:root {
+  --couleur-primaire: #0066cc;
+  --couleur-secondaire: #6c757d;
+  --couleur-danger: #dc3545;
+  --couleur-texte: #333;
+  --espacement-base: 8px;
+  --rayon-bordure: 4px;
+}
+
+.bouton {
+  padding: calc(var(--espacement-base) * 2);
+  background-color: var(--couleur-primaire);
+  color: white;
+  border-radius: var(--rayon-bordure);
+}
+
+.bouton.secondaire {
+  background-color: var(--couleur-secondaire);
+}
+
+.bouton.danger {
+  background-color: var(--couleur-danger);
+}
+```
+
+### Thème Sombre/Clair
+
+```css
+/* theme.css */
+:root {
+  --couleur-fond: #ffffff;
+  --couleur-texte: #213547;
+  --couleur-primaire: #0066cc;
+  --couleur-carte: #f8f9fa;
+  --ombre: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="sombre"] {
+  --couleur-fond: #1a1a1a;
+  --couleur-texte: #ffffff;
+  --couleur-primaire: #66b3ff;
+  --couleur-carte: #2d2d2d;
+  --ombre: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+body {
+  background-color: var(--couleur-fond);
+  color: var(--couleur-texte);
+}
+
+.carte {
+  background-color: var(--couleur-carte);
+  box-shadow: var(--ombre);
+}
+```
+
+```jsx
+function ThemeToggle() {
+  const [theme, setTheme] = useState('clair')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  return (
+    <button onClick={() => setTheme(t => t === 'clair' ? 'sombre' : 'clair')}>
+      Basculer le thème
+    </button>
+  )
+}
+```
+
+## Animations
+
+### Transitions CSS
+
+```css
+.bouton {
+  background-color: #0066cc;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.bouton:hover {
+  background-color: #0052a3;
+  transform: scale(1.05);
+}
+```
+
+### Animations CSS
+
+```css
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.carte {
+  animation: apparition 0.5s ease-out;
+}
+```
+
+## Bonnes Pratiques
+
+1. **Organisation**
+   - Utilisez une convention de nommage cohérente (BEM, SMACSS, etc.)
+   - Séparez les styles par composant
+   - Évitez les styles globaux excessifs
+
+2. **Performance**
+   - Évitez les sélecteurs trop profonds
+   - Utilisez des classes plutôt que des sélecteurs d'éléments
+   - Minimisez l'utilisation des styles inline
+
+3. **Maintenabilité**
+   - Utilisez des variables CSS pour les valeurs réutilisables
+   - Commentez les styles complexes
+   - Gardez une structure cohérente
+
+4. **Responsive Design**
+   - Utilisez des media queries
+   - Privilégiez les unités relatives (rem, em, %)
+   - Adoptez une approche mobile-first
+
+## Exercices Pratiques
+
+1. Créez un système de composants UI :
+   - Boutons avec variantes
+   - Cartes
+   - Formulaires stylisés
+   - Navigation responsive
+
+2. Implémentez un thème complet :
+   - Palette de couleurs
+   - Typography
+   - Espacements
+   - Animations
+
+3. Créez une interface responsive :
+   - Layout avec grid/flexbox
+   - Menu burger pour mobile
+   - Images responsives
+   - Breakpoints cohérents
+
+## Conclusion
+
+Le styling en React offre de nombreuses approches, chacune avec ses avantages. Le choix dépend des besoins du projet : CSS Modules pour une isolation simple, Styled Components pour une intégration étroite avec JavaScript, ou CSS classique pour des projets plus traditionnels.
+
+Dans le prochain chapitre, nous explorerons la création de formulaires en React et leur validation. 

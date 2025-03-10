@@ -1,0 +1,14 @@
+{
+    "title": "React Débutant", 
+    "pages": [
+        "introduction", 
+        "installation-vite", 
+        "composants-react", 
+        "props-communication", 
+        "etat-evenements", 
+        "hooks-essentiels", 
+        "styling-css", 
+        "formulaires", 
+        "projet-todo"
+    ]
+} 
