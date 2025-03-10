@@ -1,0 +1,449 @@
+---
+title: Projet Pratique - Application Todo
+description: Créez une application de gestion de tâches complète en React, en mettant en pratique tous les concepts appris.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Introduction au Projet
+
+<Callout type="info">
+  Dans ce projet pratique, nous allons créer une application de gestion de tâches complète en utilisant React. 
+  Nous mettrons en pratique tous les concepts vus précédemment : composants, état, formulaires, et styling.
+</Callout>
+
+## Structure du Projet
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="components" defaultOpen>
+      <File name="TodoList.jsx" />
+      <File name="TodoItem.jsx" />
+      <File name="TodoForm.jsx" />
+      <File name="TodoFilter.jsx" />
+    </Folder>
+    <Folder name="hooks">
+      <File name="useTodos.js" />
+      <File name="useLocalStorage.js" />
+    </Folder>
+    <Folder name="styles">
+      <File name="Todo.module.css" />
+    </Folder>
+    <File name="App.jsx" />
+  </Folder>
+</Files>
+
+## Étapes de Développement
+
+<Steps>
+### 1. Configuration du Projet
+```bash
+npm create vite@latest todo-app -- --template react
+cd todo-app
+npm install
+```
+
+### 2. Hook de Stockage Local
+```jsx showLineNumbers
+// hooks/useLocalStorage.js
+import { useState, useEffect } from 'react';
+
+export function useLocalStorage(key, initialValue) {
+  // État initial à partir du localStorage ou de la valeur par défaut
+  const [value, setValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error('Erreur lors de la lecture du localStorage:', error);
+      return initialValue;
+    }
+  });
+
+  // Synchroniser avec localStorage à chaque changement
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Erreur lors de l\'écriture dans le localStorage:', error);
+    }
+  }, [key, value]);
+
+  return [value, setValue];
+}
+```
+
+### 3. Hook de Gestion des Tâches
+```jsx showLineNumbers
+// hooks/useTodos.js
+import { useLocalStorage } from './useLocalStorage';
+
+export function useTodos() {
+  const [todos, setTodos] = useLocalStorage('todos', []);
+  const [filter, setFilter] = useLocalStorage('todoFilter', 'all');
+
+  const addTodo = (text) => {
+    setTodos(prev => [...prev, {
+      id: Date.now(),
+      text,
+      completed: false,
+      createdAt: new Date()
+    }]);
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(prev => prev.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(prev => prev.filter(todo => todo.id !== id));
+  };
+
+  const editTodo = (id, newText) => {
+    setTodos(prev => prev.map(todo =>
+      todo.id === id ? { ...todo, text: newText } : todo
+    ));
+  };
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed;
+    if (filter === 'completed') return todo.completed;
+    return true;
+  });
+
+  return {
+    todos: filteredTodos,
+    filter,
+    setFilter,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    editTodo
+  };
+}
+```
+
+### 4. Composant TodoForm
+```jsx showLineNumbers
+// components/TodoForm.jsx
+import { useState } from 'react';
+import styles from '../styles/Todo.module.css';
+
+export function TodoForm({ onAdd }) {
+  const [text, setText] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (text.trim()) {
+      onAdd(text.trim());
+      setText('');
+    }
+  };
+
+  return (
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Ajouter une tâche..."
+        className={styles.input}
+      />
+      <button type="submit" className={styles.button}>
+        Ajouter
+      </button>
+    </form>
+  );
+}
+```
+
+### 5. Composant TodoItem
+```jsx showLineNumbers
+// components/TodoItem.jsx
+import { useState } from 'react';
+import styles from '../styles/Todo.module.css';
+
+export function TodoItem({ todo, onToggle, onDelete, onEdit }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+
+  const handleEdit = () => {
+    if (editText.trim() !== todo.text) {
+      onEdit(todo.id, editText.trim());
+    }
+    setIsEditing(false);
+  };
+
+  return (
+    <div className={styles.todoItem}>
+      {isEditing ? (
+        <input
+          type="text"
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          onBlur={handleEdit}
+          onKeyPress={(e) => e.key === 'Enter' && handleEdit()}
+          className={styles.editInput}
+          autoFocus
+        />
+      ) : (
+        <>
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => onToggle(todo.id)}
+            className={styles.checkbox}
+          />
+          <span
+            className={`${styles.text} ${todo.completed ? styles.completed : ''}`}
+            onDoubleClick={() => setIsEditing(true)}
+          >
+            {todo.text}
+          </span>
+          <button
+            onClick={() => onDelete(todo.id)}
+            className={styles.deleteButton}
+          >
+            ×
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+```
+
+### 6. Composant TodoFilter
+```jsx showLineNumbers
+// components/TodoFilter.jsx
+import styles from '../styles/Todo.module.css';
+
+export function TodoFilter({ filter, onFilterChange }) {
+  return (
+    <div className={styles.filter}>
+      <button
+        className={`${styles.filterButton} ${filter === 'all' ? styles.active : ''}`}
+        onClick={() => onFilterChange('all')}
+      >
+        Toutes
+      </button>
+      <button
+        className={`${styles.filterButton} ${filter === 'active' ? styles.active : ''}`}
+        onClick={() => onFilterChange('active')}
+      >
+        Actives
+      </button>
+      <button
+        className={`${styles.filterButton} ${filter === 'completed' ? styles.active : ''}`}
+        onClick={() => onFilterChange('completed')}
+      >
+        Terminées
+      </button>
+    </div>
+  );
+}
+```
+
+### 7. Composant TodoList
+```jsx showLineNumbers
+// components/TodoList.jsx
+import { TodoItem } from './TodoItem';
+import styles from '../styles/Todo.module.css';
+
+export function TodoList({ todos, onToggle, onDelete, onEdit }) {
+  if (todos.length === 0) {
+    return (
+      <div className={styles.empty}>
+        Aucune tâche à afficher
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.list}>
+      {todos.map(todo => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={onToggle}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### 8. Styles CSS
+```css showLineNumbers
+/* styles/Todo.module.css */
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #0056b3;
+}
+
+.todoItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.text {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.deleteButton {
+  padding: 0.2rem 0.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.filterButton {
+  padding: 0.3rem 0.8rem;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filterButton.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.empty {
+  text-align: center;
+  color: #888;
+  padding: 1rem;
+}
+```
+
+### 9. Application Principale
+```jsx showLineNumbers
+// App.jsx
+import { TodoForm } from './components/TodoForm';
+import { TodoList } from './components/TodoList';
+import { TodoFilter } from './components/TodoFilter';
+import { useTodos } from './hooks/useTodos';
+import styles from './styles/Todo.module.css';
+
+function App() {
+  const {
+    todos,
+    filter,
+    setFilter,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    editTodo
+  } = useTodos();
+
+  return (
+    <div className={styles.container}>
+      <h1>Liste de Tâches</h1>
+      <TodoForm onAdd={addTodo} />
+      <TodoFilter filter={filter} onFilterChange={setFilter} />
+      <TodoList
+        todos={todos}
+        onToggle={toggleTodo}
+        onDelete={deleteTodo}
+        onEdit={editTodo}
+      />
+    </div>
+  );
+}
+
+export default App;
+```
+</Steps>
+
+## Fonctionnalités Avancées
+
+<Cards>
+  <Card title="Drag & Drop" icon="🔄">
+    Ajoutez la possibilité de réorganiser les tâches par glisser-déposer
+  </Card>
+  <Card title="Catégories" icon="🏷️">
+    Implémentez un système de catégories ou d'étiquettes pour les tâches
+  </Card>
+  <Card title="Dates" icon="📅">
+    Ajoutez des dates d'échéance et des rappels pour les tâches
+  </Card>
+  <Card title="Sous-tâches" icon="📋">
+    Permettez la création de sous-tâches pour une meilleure organisation
+  </Card>
+</Cards>
+
+## Exercices Supplémentaires
+
+<Steps>
+### Améliorations Suggérées
+1. Ajoutez une fonction de recherche de tâches
+2. Implémentez un système de tri (par date, priorité, etc.)
+3. Ajoutez des animations lors de l'ajout/suppression de tâches
+4. Créez un système de sauvegarde/restauration des tâches
+5. Ajoutez un mode sombre
+</Steps>
+
+<Callout type="warning">
+  N'oubliez pas de gérer les cas d'erreur et d'ajouter des tests unitaires pour vos composants !
+</Callout> 

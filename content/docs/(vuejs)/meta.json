@@ -1,4 +1,4 @@
 {
     "title": "VueJS", 
-    "pages": ["index-vuejs", "concept-vuejs", "installation-vuejs", "principes-vuejs", "routage-vuejs", "vuejs-vs-react", "tester-vuejs"]
+    "pages": ["index-vuejs", "concept-vuejs", "installation-vuejs", "principes-vuejs", "composition-api-vuejs", "routage-vuejs", "gestion-etat-vuejs", "vuejs-vs-react", "exercice-pratique-vuejs", "tester-vuejs"]
 }

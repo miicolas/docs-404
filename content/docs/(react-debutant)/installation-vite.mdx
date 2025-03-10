@@ -1,0 +1,200 @@
+---
+title: Installation avec Vite
+description: Apprenez à configurer votre premier projet React en utilisant Vite, un outil de build moderne et ultra-rapide.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Création d'un Projet React avec Vite
+
+<Steps>
+### Installation
+1. Ouvrez votre terminal
+2. Naviguez vers le dossier où vous souhaitez créer votre projet
+3. Exécutez la commande suivante :
+```package-install
+npm create vite@latest mon-projet-react -- --template react
+```
+</Steps>
+
+<Callout type="info">
+  Vite est un outil de build moderne qui offre une expérience de développement plus rapide que Create React App.
+</Callout>
+
+## Structure du Projet
+
+<Files>
+  <Folder name="mon-projet-react" defaultOpen>
+    <Folder name="src" defaultOpen>
+      <File name="App.jsx" />
+      <File name="main.jsx" />
+      <File name="index.css" />
+      <Folder name="assets">
+        <File name="react.svg" />
+      </Folder>
+    </Folder>
+    <File name="index.html" />
+    <File name="package.json" />
+    <File name="vite.config.js" />
+  </Folder>
+</Files>
+
+## Configuration Initiale
+
+<Steps>
+### Étapes de configuration
+1. Naviguez dans le dossier du projet :
+```bash
+cd mon-projet-react
+```
+
+2. Installez les dépendances :
+```package-install
+npm install
+```
+
+3. Démarrez le serveur de développement :
+```package-install
+npm run dev
+```
+</Steps>
+
+## Fichiers Principaux
+
+<Tabs>
+  <Tab label="index.html" value="index">
+    ```html showLineNumbers
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>React + Vite</title>
+      </head>
+      <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.jsx"></script>
+      </body>
+    </html>
+    ```
+  </Tab>
+  <Tab label="main.jsx" value="main">
+    ```jsx showLineNumbers
+    import React from 'react'
+    import ReactDOM from 'react-dom/client'
+    import App from './App'
+    import './index.css'
+
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    )
+    ```
+  </Tab>
+  <Tab label="App.jsx" value="app">
+    ```jsx showLineNumbers
+    import { useState } from 'react'
+    import './App.css'
+
+    function App() {
+      const [count, setCount] = useState(0)
+
+      return (
+        <div className="App">
+          <h1>Vite + React</h1>
+          <button onClick={() => setCount(count + 1)}>
+            count is {count}
+          </button>
+        </div>
+      )
+    }
+
+    export default App
+    ```
+  </Tab>
+</Tabs>
+
+## Scripts Disponibles
+
+<Cards>
+  <Card title="npm run dev" icon="🚀">
+    Lance le serveur de développement
+  </Card>
+  <Card title="npm run build" icon="📦">
+    Compile le projet pour la production
+  </Card>
+  <Card title="npm run preview" icon="👀">
+    Prévisualise la version de production
+  </Card>
+</Cards>
+
+## Configuration de l'Éditeur
+
+<Steps>
+### Configuration recommandée
+1. Installez l'extension **ESLint**
+2. Installez l'extension **Prettier**
+3. Configurez l'auto-formatage au save
+</Steps>
+
+<Callout type="warning">
+  Pour une meilleure expérience de développement, nous recommandons d'utiliser Visual Studio Code avec les extensions appropriées.
+</Callout>
+
+## Configuration ESLint
+
+```json filename=".eslintrc.cjs" showLineNumbers
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'plugin:react-hooks/recommended',
+  ],
+  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+  settings: { react: { version: '18.2' } },
+  plugins: ['react-refresh'],
+  rules: {
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExport: true },
+    ],
+  },
+}
+```
+
+## Personnalisation de Vite
+
+```js filename="vite.config.js" showLineNumbers
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+    open: true
+  }
+})
+```
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Composants React" href="composants-react" icon="🧩">
+    Créez vos premiers composants React
+  </Card>
+  <Card title="Props et Communication" href="props-communication" icon="🔄">
+    Apprenez à faire communiquer vos composants
+  </Card>
+</Cards>
+
+<Callout type="info">
+  Maintenant que votre environnement est configuré, vous êtes prêt à commencer le développement de votre application React !
+</Callout> 

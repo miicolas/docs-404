@@ -1,0 +1,259 @@
+---
+title: Styling avec CSS en React
+description: Apprenez à styler vos composants React avec CSS, en utilisant différentes approches et bonnes pratiques.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Introduction au Styling en React
+
+<Callout type="info">
+  React offre plusieurs approches pour styler vos composants. Nous allons explorer les différentes méthodes, de la plus simple à la plus avancée.
+</Callout>
+
+## CSS Classique
+
+<Tabs>
+  <Tab label="CSS Externe" value="css-externe">
+    ```css showLineNumbers
+    /* styles.css */
+    .button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+    ```
+    ```jsx
+    import './styles.css';
+
+    function Button() {
+      return <button className="button">Cliquez-moi</button>;
+    }
+    ```
+  </Tab>
+  <Tab label="CSS Modules" value="css-modules">
+    ```css showLineNumbers
+    /* Button.module.css */
+    .button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+    }
+    ```
+    ```jsx
+    import styles from './Button.module.css';
+
+    function Button() {
+      return <button className={styles.button}>Cliquez-moi</button>;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Styles Inline
+
+<Steps>
+### Avantages et Inconvénients
+1. **Avantages**
+   - Styles dynamiques faciles
+   - Pas de conflits de noms
+   - Couplage fort avec la logique
+
+2. **Inconvénients**
+   - Pas de pseudo-classes (:hover, :focus)
+   - Pas de media queries
+   - Moins performant
+   
+### Exemple d'Utilisation
+```jsx showLineNumbers
+function Card({ color }) {
+  const styles = {
+    container: {
+      padding: '20px',
+      backgroundColor: color || '#fff',
+      borderRadius: '8px',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    },
+    title: {
+      fontSize: '1.5rem',
+      marginBottom: '10px'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <h2 style={styles.title}>Ma Carte</h2>
+    </div>
+  );
+}
+```
+</Steps>
+
+## CSS-in-JS
+
+<Cards>
+  <Card title="Styled Components" icon="💅">
+    ```jsx showLineNumbers
+    import styled from 'styled-components';
+
+    const Button = styled.button`
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: ${props => props.primary ? '#007bff' : '#6c757d'};
+      color: white;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    `;
+
+    function App() {
+      return (
+        <div>
+          <Button primary>Principal</Button>
+          <Button>Secondaire</Button>
+        </div>
+      );
+    }
+    ```
+  </Card>
+  <Card title="Emotion" icon="👩‍🎤">
+    ```jsx showLineNumbers
+    /** @jsxImportSource @emotion/react */
+    import { css } from '@emotion/react';
+
+    const buttonStyle = css`
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    `;
+
+    function Button() {
+      return <button css={buttonStyle}>Cliquez-moi</button>;
+    }
+    ```
+  </Card>
+</Cards>
+
+## Organisation des Styles
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="styles" defaultOpen>
+      <File name="variables.css" />
+          <File name="reset.css" />
+      <File name="global.css" />
+    </Folder>
+    <Folder name="components">
+      <File name="Button.module.css" />
+      <File name="Card.module.css" />
+    </Folder>
+  </Folder>
+</Files>
+
+## Bonnes Pratiques
+
+<Steps>
+### Recommandations
+1. **Modularité**
+   - Un fichier CSS par composant
+   - Utilisation des CSS Modules
+
+2. **Variables CSS**
+   ```css showLineNumbers
+   :root {
+     --primary-color: #007bff;
+     --secondary-color: #6c757d;
+     --spacing-unit: 8px;
+     --border-radius: 4px;
+   }
+   ```
+
+3. **Conventions de Nommage**
+   - BEM (Block Element Modifier)
+   - Noms descriptifs et cohérents
+
+4. **Responsive Design**
+   ```css showLineNumbers
+   .container {
+     max-width: 100%;
+     padding: var(--spacing-unit);
+   }
+
+   @media (min-width: 768px) {
+     .container {
+       max-width: 720px;
+       margin: 0 auto;
+     }
+   }
+   ```
+</Steps>
+
+## Exercice Pratique : Créer un Thème
+
+<Callout type="info">
+  Créez un système de thème complet pour votre application React avec support du mode sombre.
+</Callout>
+
+```jsx showLineNumbers
+// theme.js
+export const lightTheme = {
+  background: '#ffffff',
+  text: '#000000',
+  primary: '#007bff',
+  secondary: '#6c757d'
+};
+
+export const darkTheme = {
+  background: '#1a1a1a',
+  text: '#ffffff',
+  primary: '#0d6efd',
+  secondary: '#495057'
+};
+
+// App.js
+function App() {
+  const [isDark, setIsDark] = useState(false);
+  const theme = isDark ? darkTheme : lightTheme;
+
+  return (
+    <div style={{ 
+      backgroundColor: theme.background,
+      color: theme.text
+    }}>
+      <button onClick={() => setIsDark(!isDark)}>
+        Changer de thème
+      </button>
+    </div>
+  );
+}
+```
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Formulaires" href="formulaires" icon="📝">
+    Créez des formulaires interactifs
+  </Card>
+  <Card title="Projet Todo" href="projet-todo" icon="✅">
+    Mettez en pratique vos connaissances
+  </Card>
+</Cards> 

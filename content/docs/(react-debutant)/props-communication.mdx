@@ -1,0 +1,282 @@
+---
+title: Props et Communication entre Composants
+description: Apprenez à gérer la communication entre composants React en utilisant les props et les callbacks.
+---
+
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Les Props en Détail
+
+<Callout type="info">
+  Les props sont le moyen principal de passer des données d'un composant parent à un composant enfant en React.
+</Callout>
+
+## Types de Props
+
+<Tabs>
+  <Tab label="Types Simples" value="simples">
+    ```jsx showLineNumbers
+    function Exemple({
+      texte,    // String
+      nombre,   // Number
+      actif,    // Boolean
+      onClick   // Function
+    }) {
+      return (
+        <div>
+          <p>{texte}</p>
+          <p>Nombre : {nombre}</p>
+          <p>Actif : {actif ? 'Oui' : 'Non'}</p>
+          <button onClick={onClick}>Cliquer</button>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+  <Tab label="Types Complexes" value="complexes">
+    ```jsx showLineNumbers
+    function Exemple({
+      utilisateur,  // Object
+      items,        // Array
+      children,     // React nodes
+      render        // Render prop
+    }) {
+      return (
+        <div>
+          <h2>{utilisateur.nom}</h2>
+          <ul>
+            {items.map(item => (
+              <li key={item.id}>{item.texte}</li>
+            ))}
+          </ul>
+          {children}
+          {render(utilisateur)}
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Communication Parent vers Enfant
+
+<Steps>
+### Passage de Props
+1. Définissez les props dans le composant parent
+```jsx
+function Parent() {
+  const data = { nom: "Alice" };
+  return <Enfant utilisateur={data} />;
+}
+```
+
+2. Recevez les props dans le composant enfant
+```jsx
+function Enfant({ utilisateur }) {
+  return <h1>Bonjour {utilisateur.nom}</h1>;
+}
+```
+</Steps>
+
+## Communication Enfant vers Parent
+
+<Steps>
+### Utilisation des Callbacks
+1. Définissez un callback dans le parent
+```jsx
+function Parent() {
+  const handleMessage = (msg) => {
+    console.log("Message reçu :", msg);
+  };
+  
+  return <Enfant onMessage={handleMessage} />;
+}
+```
+
+2. Appelez le callback dans l'enfant
+```jsx
+function Enfant({ onMessage }) {
+  return (
+    <button onClick={() => onMessage("Hello!")}>
+      Envoyer
+    </button>
+  );
+}
+```
+</Steps>
+
+## Patterns de Communication
+
+<Cards>
+  <Card title="Props Drilling" icon="⛓️">
+    Passage de props à travers plusieurs niveaux
+  </Card>
+  <Card title="Render Props" icon="🎯">
+    Passage d'une fonction de rendu comme prop
+  </Card>
+  <Card title="Children Props" icon="👶">
+    Composition de composants via children
+  </Card>
+  <Card title="Context API" icon="🌍">
+    Partage de données global
+  </Card>
+</Cards>
+
+## Exemple Pratique : Formulaire de Contact
+
+<Tabs>
+  <Tab label="Structure" value="structure">
+    <Files>
+      <Folder name="components" defaultOpen>
+        <File name="ContactForm.jsx" />
+        <File name="FormInput.jsx" />
+        <File name="FormButton.jsx" />
+        <File name="FormMessage.jsx" />
+      </Folder>
+    </Files>
+  </Tab>
+  <Tab label="Composants" value="composants">
+    ```jsx showLineNumbers
+    // FormInput.jsx
+    function FormInput({ label, value, onChange, type = "text" }) {
+      return (
+        <div className="form-group">
+          <label>{label}</label>
+          <input
+            type={type}
+            value={value}
+            onChange={e => onChange(e.target.value)}
+          />
+        </div>
+      );
+    }
+
+    // ContactForm.jsx
+    function ContactForm({ onSubmit }) {
+      const [formData, setFormData] = useState({
+        nom: "",
+        email: "",
+        message: ""
+      });
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(formData);
+      };
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <FormInput
+            label="Nom"
+            value={formData.nom}
+            onChange={nom => setFormData({...formData, nom})}
+          />
+          <FormInput
+            label="Email"
+            type="email"
+            value={formData.email}
+            onChange={email => setFormData({...formData, email})}
+          />
+          <FormButton type="submit">Envoyer</FormButton>
+        </form>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Validation des Props
+
+<Steps>
+### Méthodes de Validation
+1. PropTypes (Runtime)
+```jsx
+import PropTypes from 'prop-types';
+
+function User({ name, age, email }) {
+  return (/* ... */);
+}
+
+User.propTypes = {
+  name: PropTypes.string.isRequired,
+  age: PropTypes.number,
+  email: PropTypes.string.isRequired
+};
+```
+
+2. TypeScript (Build time)
+```tsx
+interface UserProps {
+  name: string;
+  age?: number;
+  email: string;
+}
+
+function User({ name, age, email }: UserProps) {
+  return (/* ... */);
+}
+```
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Props par Défaut" icon="🎯">
+    ```jsx
+    function Button({ type = 'primary' }) {
+      return <button className={type}>Click</button>;
+    }
+    ```
+  </Card>
+  <Card title="Destructuration" icon="🔄">
+    ```jsx
+    function User({ name, email }) {
+      return <div>{name} ({email})</div>;
+    }
+    ```
+  </Card>
+  <Card title="Props Immuables" icon="🔒">
+    Ne modifiez jamais directement les props
+  </Card>
+  <Card title="Documentation" icon="📝">
+    Documentez vos props avec JSDoc ou TypeScript
+  </Card>
+</Cards>
+
+## Exercices Pratiques
+
+<Steps>
+### Exercices
+1. Créez une liste de tâches avec :
+   - Composant `TodoList` (parent)
+   - Composant `TodoItem` (enfant)
+   - Communication bidirectionnelle
+
+2. Implémentez un système de filtrage :
+   - Composant `FilterButtons`
+   - Communication avec le parent
+   - Mise à jour de l'affichage
+
+3. Créez un formulaire complexe :
+   - Plusieurs champs contrôlés
+   - Validation des entrées
+   - Soumission au parent
+</Steps>
+
+<Callout type="warning">
+  Évitez le prop drilling excessif ! Si vous passez des props à travers de nombreux niveaux, envisagez d'utiliser le Context API ou un gestionnaire d'état.
+</Callout>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="État et Événements" href="etat-evenements" icon="⚡">
+    Gérez l'état local et les interactions
+  </Card>
+  <Card title="Hooks Essentiels" href="hooks-essentiels" icon="🎣">
+    Découvrez les hooks React
+  </Card>
+</Cards> 

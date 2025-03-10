@@ -1,0 +1,362 @@
+---
+title: Gestion des Formulaires en React
+description: Apprenez à créer et gérer des formulaires interactifs en React, avec validation et bonnes pratiques.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Introduction aux Formulaires
+
+<Callout type="info">
+  Les formulaires sont une partie essentielle de toute application web interactive. React offre des outils puissants pour les gérer efficacement.
+</Callout>
+
+## Formulaires Contrôlés vs Non-Contrôlés
+
+<Tabs>
+  <Tab label="Formulaire Contrôlé" value="controle">
+    ```jsx showLineNumbers
+    function FormControle() {
+      const [valeur, setValeur] = useState('');
+    
+      const handleChange = (e) => {
+        setValeur(e.target.value);
+      };
+    
+      return (
+        <input
+          type="text"
+          value={valeur}
+          onChange={handleChange}
+          placeholder="Entrez du texte"
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab label="Formulaire Non-Contrôlé" value="non-controle">
+    ```jsx showLineNumbers
+    function FormNonControle() {
+      const inputRef = useRef(null);
+    
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log(inputRef.current.value);
+      };
+    
+      return (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            ref={inputRef}
+            defaultValue=""
+            placeholder="Entrez du texte"
+          />
+          <button type="submit">Envoyer</button>
+        </form>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Gestion des Champs Multiples
+
+<Steps>
+### Approche avec un Objet d'État
+```jsx showLineNumbers
+function Inscription() {
+  const [formData, setFormData] = useState({
+    nom: '',
+    email: '',
+    password: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Données du formulaire:', formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="nom">Nom:</label>
+        <input
+          id="nom"
+          name="nom"
+          type="text"
+          value={formData.nom}
+          onChange={handleChange}
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="email">Email:</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="password">Mot de passe:</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+        />
+      </div>
+      
+      <button type="submit">S'inscrire</button>
+    </form>
+  );
+}
+```
+</Steps>
+
+## Validation des Formulaires
+
+<Cards>
+  <Card title="Validation Simple" icon="✅">
+    ```jsx showLineNumbers
+    const [errors, setErrors] = useState({});
+
+    const validateForm = () => {
+      const newErrors = {};
+      
+      if (!formData.nom) {
+        newErrors.nom = 'Le nom est requis';
+      }
+      
+      if (!formData.email) {
+        newErrors.email = 'L\'email est requis';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Format d\'email invalide';
+      }
+      
+      if (!formData.password) {
+        newErrors.password = 'Le mot de passe est requis';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Le mot de passe doit faire au moins 6 caractères';
+      }
+      
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+    ```
+  </Card>
+  <Card title="Affichage des Erreurs" icon="⚠️">
+    ```jsx showLineNumbers
+    <div>
+      <input
+        name="email"
+        type="email"
+        value={formData.email}
+        onChange={handleChange}
+        className={errors.email ? 'error' : ''}
+      />
+      {errors.email && (
+        <span className="error-message">
+          {errors.email}
+        </span>
+      )}
+    </div>
+    ```
+  </Card>
+</Cards>
+
+## Hook Personnalisé pour les Formulaires
+
+```jsx showLineNumbers
+function useForm(initialState = {}) {
+  const [values, setValues] = useState(initialState);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Effacer l'erreur quand l'utilisateur commence à corriger
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleSubmit = async (onSubmit, validate) => {
+    setIsSubmitting(true);
+    
+    if (validate) {
+      const newErrors = validate(values);
+      setErrors(newErrors);
+      
+      if (Object.keys(newErrors).length === 0) {
+        await onSubmit(values);
+      }
+    } else {
+      await onSubmit(values);
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  return {
+    values,
+    errors,
+    isSubmitting,
+    handleChange,
+    handleSubmit
+  };
+}
+```
+
+## Exemple Complet avec Hook Personnalisé
+
+<Steps>
+### Utilisation du Hook
+```jsx showLineNumbers
+function FormulaireDInscription() {
+  const {
+    values,
+    errors,
+    isSubmitting,
+    handleChange,
+    handleSubmit
+  } = useForm({
+    nom: '',
+    email: '',
+    password: ''
+  });
+
+  const validateForm = (values) => {
+    const errors = {};
+    
+    if (!values.nom) {
+      errors.nom = 'Le nom est requis';
+    }
+    
+    if (!values.email) {
+      errors.email = 'L\'email est requis';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      errors.email = 'Format d\'email invalide';
+    }
+    
+    if (!values.password) {
+      errors.password = 'Le mot de passe est requis';
+    } else if (values.password.length < 6) {
+      errors.password = 'Le mot de passe doit faire au moins 6 caractères';
+    }
+    
+    return errors;
+  };
+
+  const onSubmit = async (values) => {
+    try {
+      // Simuler un appel API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Inscription réussie:', values);
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription:', error);
+    }
+  };
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      handleSubmit(onSubmit, validateForm);
+    }}>
+      <div>
+        <label htmlFor="nom">Nom:</label>
+        <input
+          id="nom"
+          name="nom"
+          type="text"
+          value={values.nom}
+          onChange={handleChange}
+          className={errors.nom ? 'error' : ''}
+        />
+        {errors.nom && <span className="error-message">{errors.nom}</span>}
+      </div>
+
+      <div>
+        <label htmlFor="email">Email:</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={values.email}
+          onChange={handleChange}
+          className={errors.email ? 'error' : ''}
+        />
+        {errors.email && <span className="error-message">{errors.email}</span>}
+      </div>
+
+      <div>
+        <label htmlFor="password">Mot de passe:</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          value={values.password}
+          onChange={handleChange}
+          className={errors.password ? 'error' : ''}
+        />
+        {errors.password && <span className="error-message">{errors.password}</span>}
+      </div>
+
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Inscription en cours...' : 'S\'inscrire'}
+      </button>
+    </form>
+  );
+}
+```
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Accessibilité" icon="♿">
+    - Utiliser des labels avec htmlFor
+    - Ajouter des aria-labels
+    - Gérer la navigation au clavier
+  </Card>
+  <Card title="UX" icon="🎯">
+    - Validation en temps réel
+    - Messages d'erreur clairs
+    - Indicateurs de chargement
+  </Card>
+  <Card title="Sécurité" icon="🔒">
+    - Validation côté serveur
+    - Protection CSRF
+    - Sanitization des données
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Projet Todo" href="projet-todo" icon="✅">
+    Mettez en pratique vos connaissances
+  </Card>
+</Cards> 

@@ -8,7 +8,6 @@ import {
 import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import ButtonGithub from '@/app/components/ui/button-github';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 
 export default async function Page(props: {
@@ -27,8 +26,6 @@ export default async function Page(props: {
       <DocsBody>
         <MDX components={{
           ...defaultMdxComponents,
-          Tab,
-          Tabs,
         }} />
       </DocsBody>
       <div className='mt-4'>

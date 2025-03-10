@@ -1,0 +1,118 @@
+---
+title: Introduction à React
+description: Découvrez les fondamentaux de React, une bibliothèque JavaScript puissante pour créer des interfaces utilisateur interactives.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Qu'est-ce que React ?
+
+React est une bibliothèque JavaScript développée par Facebook qui permet de créer des interfaces utilisateur interactives et réactives.
+
+<Steps>
+### Caractéristiques principales
+1. **Composants** : React est basé sur les composants réutilisables
+2. **Virtual DOM** : Optimisation des performances avec un DOM virtuel
+3. **JSX** : Syntaxe déclarative mêlant JavaScript et HTML
+4. **Unidirectional Data Flow** : Flux de données prévisible
+</Steps>
+
+## Pré-requis
+
+Pour bien suivre ce cours, vous devez maîtriser :
+
+<Cards>
+  <Card title="JavaScript Moderne" href="/docs/(javascript)/javascript-moderne" icon="🟨">
+    ES6+, fonctions, objets, tableaux, promesses
+  </Card>
+  <Card title="HTML & CSS" href="/docs/(html)/intro-html" icon="🌐">
+    Structure et style des pages web
+  </Card>
+  <Card title="Node.js & npm" href="/docs/(nodejs)/introduction" icon="📦">
+    Environnement de développement JavaScript
+  </Card>
+</Cards>
+
+## Pourquoi React ?
+
+<Tabs>
+  <Tab label="Popularité" value="popularite">
+    - Plus de 200 000 packages npm
+    - Large communauté de développeurs
+    - Nombreuses ressources disponibles
+  </Tab>
+  <Tab label="Performance" value="performance">
+    - Virtual DOM optimisé
+    - Rendu efficace des composants
+    - Excellent pour les applications complexes
+  </Tab>
+  <Tab label="Écosystème" value="ecosysteme">
+    - Riche bibliothèque de composants
+    - Outils de développement puissants
+    - Frameworks basés sur React (Next.js, Remix)
+  </Tab>
+</Tabs>
+
+## Concepts Fondamentaux
+
+<Files>
+  <Folder name="react-app" defaultOpen>
+    <Folder name="src" defaultOpen>
+      <File name="App.jsx" />
+      <File name="index.js" />
+      <Folder name="components">
+        <File name="Button.jsx" />
+        <File name="Card.jsx" />
+      </Folder>
+    </Folder>
+    <File name="package.json" />
+  </Folder>
+</Files>
+
+## Exemple Simple
+
+```jsx showLineNumbers
+import React from 'react';
+
+function Welcome({ name }) {
+  return <h1>Bonjour, {name} !</h1>;
+}
+
+// Utilisation :
+<Welcome name="Alice" />
+```
+
+<Callout type="info">
+  React utilise une syntaxe appelée JSX qui permet d'écrire du HTML dans du JavaScript. C'est l'un des aspects les plus puissants de React !
+</Callout>
+
+## Structure du Cours
+
+<Steps>
+### Programme
+1. Installation et configuration avec Vite
+2. Composants React fondamentaux
+3. Props et communication entre composants
+4. État et événements
+5. Hooks essentiels
+6. Styling en CSS
+7. Formulaires
+8. Projet final : Todo List
+</Steps>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Installation avec Vite" href="installation-vite" icon="🚀">
+    Configurez votre premier projet React
+  </Card>
+  <Card title="Composants React" href="composants-react" icon="🧩">
+    Découvrez les blocs de construction de React
+  </Card>
+</Cards>
+
+<Callout type="warning">
+  Assurez-vous d'avoir Node.js installé sur votre machine avant de commencer. Vous pouvez le télécharger sur [nodejs.org](https://nodejs.org).
+</Callout> 

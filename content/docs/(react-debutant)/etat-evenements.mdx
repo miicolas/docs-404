@@ -1,0 +1,293 @@
+---
+title: État et Événements en React
+description: Découvrez comment gérer l'état local et les événements dans vos composants React pour créer des interfaces interactives.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## L'État Local avec useState
+
+<Callout type="info">
+  Le hook `useState` est le moyen principal de gérer l'état local dans les composants React. Il permet de rendre vos composants dynamiques et interactifs.
+</Callout>
+
+## Types d'État
+
+<Tabs>
+  <Tab label="Valeurs Simples" value="simples">
+    ```jsx showLineNumbers
+    function Compteur() {
+      const [compte, setCompte] = useState(0);
+      const [texte, setTexte] = useState('');
+      const [actif, setActif] = useState(false);
+      
+      return (
+        <div>
+          <p>Compteur : {compte}</p>
+          <button onClick={() => setCompte(compte + 1)}>
+            Incrémenter
+          </button>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+  <Tab label="Objets" value="objets">
+    ```jsx showLineNumbers
+    function Formulaire() {
+      const [formData, setFormData] = useState({
+        nom: '',
+        email: '',
+        age: 0
+      });
+      
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      };
+      
+      return (
+        <form>
+          <input
+            name="nom"
+            value={formData.nom}
+            onChange={handleChange}
+          />
+          {/* ... autres champs ... */}
+        </form>
+      );
+    }
+    ```
+  </Tab>
+  <Tab label="Tableaux" value="tableaux">
+    ```jsx showLineNumbers
+    function ListeTaches() {
+      const [taches, setTaches] = useState([]);
+      
+      const ajouterTache = (texte) => {
+        setTaches(prev => [
+          ...prev,
+          { id: Date.now(), texte, terminee: false }
+        ]);
+      };
+      
+      return (
+        <div>
+          <button onClick={() => ajouterTache('Nouvelle tâche')}>
+            Ajouter
+          </button>
+          <ul>
+            {taches.map(tache => (
+              <li key={tache.id}>{tache.texte}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Gestion des Événements
+
+<Steps>
+### Types d'Événements Courants
+1. **Événements de Souris**
+```jsx
+function BoutonInteractif() {
+  const handleClick = () => console.log('Cliqué !');
+  const handleHover = () => console.log('Survolé !');
+  
+  return (
+    <button
+      onClick={handleClick}
+      onMouseEnter={handleHover}
+      onMouseLeave={() => console.log('Quitté !')}
+    >
+      Interagir
+    </button>
+  );
+}
+```
+
+2. **Événements de Formulaire**
+```jsx
+function ChampControle() {
+  const [valeur, setValeur] = useState('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Soumis :', valeur);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={valeur}
+        onChange={(e) => setValeur(e.target.value)}
+        onFocus={() => console.log('Focus !')}
+        onBlur={() => console.log('Blur !')}
+      />
+    </form>
+  );
+}
+```
+
+3. **Événements Clavier**
+```jsx
+function ChampSpecial() {
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      console.log('Entrée pressée !');
+    }
+  };
+  
+  return (
+    <input
+      onKeyPress={handleKeyPress}
+      onKeyDown={(e) => console.log('Touche :', e.key)}
+    />
+  );
+}
+```
+</Steps>
+
+## Patterns de Gestion d'État
+
+<Cards>
+  <Card title="État Dérivé" icon="🔄">
+    Calculez des valeurs à partir de l'état existant
+  </Card>
+  <Card title="État Partagé" icon="🤝">
+    Remontez l'état vers un parent commun
+  </Card>
+  <Card title="État Contrôlé" icon="🎮">
+    Contrôlez complètement un composant via les props
+  </Card>
+  <Card title="État Local" icon="🏠">
+    Gardez l'état au plus près de son utilisation
+  </Card>
+</Cards>
+
+## Exemple Pratique : Gestionnaire de Tâches
+
+<Tabs>
+  <Tab label="Structure" value="structure">
+    <Files>
+      <Folder name="components" defaultOpen>
+        <File name="TaskManager.jsx" />
+        <File name="TaskList.jsx" />
+        <File name="TaskItem.jsx" />
+        <File name="TaskForm.jsx" />
+      </Folder>
+    </Files>
+  </Tab>
+  <Tab label="Code" value="code">
+    ```jsx showLineNumbers
+    // TaskManager.jsx
+    function TaskManager() {
+      const [tasks, setTasks] = useState([]);
+      const [filter, setFilter] = useState('all');
+      
+      const addTask = (text) => {
+        setTasks(prev => [
+          ...prev,
+          {
+            id: Date.now(),
+            text,
+            completed: false
+          }
+        ]);
+      };
+      
+      const toggleTask = (id) => {
+        setTasks(prev =>
+          prev.map(task =>
+            task.id === id
+              ? { ...task, completed: !task.completed }
+              : task
+          )
+        );
+      };
+      
+      const filteredTasks = tasks.filter(task => {
+        if (filter === 'active') return !task.completed;
+        if (filter === 'completed') return task.completed;
+        return true;
+      });
+      
+      return (
+        <div>
+          <TaskForm onAdd={addTask} />
+          <div>
+            <button onClick={() => setFilter('all')}>Toutes</button>
+            <button onClick={() => setFilter('active')}>Actives</button>
+            <button onClick={() => setFilter('completed')}>Terminées</button>
+          </div>
+          <TaskList tasks={filteredTasks} onToggle={toggleTask} />
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Bonnes Pratiques
+
+<Steps>
+### Recommandations
+1. **Mise à jour de l'État**
+   - Utilisez la forme fonctionnelle pour les mises à jour basées sur l'état précédent
+   - Ne modifiez jamais l'état directement
+
+2. **Gestion des Événements**
+   - Nommez vos gestionnaires avec le préfixe "handle"
+   - Utilisez la délégation d'événements pour les listes
+   - N'oubliez pas `preventDefault()` quand nécessaire
+
+3. **Performance**
+   - Évitez de créer des fonctions dans le rendu
+   - Utilisez `useCallback` pour les callbacks passés aux enfants
+   - Évitez les mises à jour d'état inutiles
+</Steps>
+
+## Exercices Pratiques
+
+<Steps>
+### Exercices
+1. Créez un compteur avec :
+   - Boutons d'incrémentation/décrémentation
+   - Réinitialisation
+   - Limite minimale et maximale
+
+2. Implémentez un formulaire de recherche :
+   - Recherche en temps réel
+   - Historique des recherches
+   - Suggestions de recherche
+
+3. Créez un jeu simple :
+   - État du jeu
+   - Score
+   - Minuteur
+   - Réinitialisation
+</Steps>
+
+<Callout type="warning">
+  Attention à la gestion des effets de bord ! Utilisez `useEffect` pour les opérations qui doivent être synchronisées avec l'état.
+</Callout>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Hooks Essentiels" href="hooks-essentiels" icon="🎣">
+    Découvrez les autres hooks React importants
+  </Card>
+  <Card title="Styling en CSS" href="styling-css" icon="🎨">
+    Apprenez à styler vos composants
+  </Card>
+</Cards> 

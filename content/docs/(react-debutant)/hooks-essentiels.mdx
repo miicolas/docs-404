@@ -1,0 +1,297 @@
+---
+title: Les Hooks Essentiels en React
+description: Découvrez les hooks fondamentaux de React comme useEffect, useRef, et useMemo pour créer des composants plus puissants.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+
+## Introduction aux Hooks
+
+<Callout type="info">
+  Les hooks sont des fonctions spéciales qui permettent d'utiliser l'état et d'autres fonctionnalités de React dans les composants fonctionnels.
+</Callout>
+
+## useEffect
+
+<Steps>
+### Cas d'Utilisation
+1. **Exécution à Chaque Rendu**
+```jsx showLineNumbers
+useEffect(() => {
+  console.log('Composant rendu');
+}); // Sans tableau de dépendances
+```
+
+2. **Exécution Une Seule Fois (Montage)**
+```jsx showLineNumbers
+useEffect(() => {
+  console.log('Composant monté');
+}, []); // Tableau de dépendances vide
+```
+
+3. **Exécution sur Changement**
+```jsx showLineNumbers
+useEffect(() => {
+  console.log('Donnée mise à jour:', data);
+}, [data]); // S'exécute quand data change
+```
+
+4. **Nettoyage (Cleanup)**
+```jsx showLineNumbers
+useEffect(() => {
+  const timer = setInterval(() => {
+    console.log('Tick');
+  }, 1000);
+  
+  return () => clearInterval(timer);
+}, []);
+```
+</Steps>
+
+## useRef
+
+<Tabs>
+  <Tab label="Accès DOM" value="dom">
+    ```jsx showLineNumbers
+    function InputFocus() {
+      const inputRef = useRef(null);
+      
+      const focusInput = () => {
+        inputRef.current.focus();
+      };
+      
+      return (
+        <div>
+          <input ref={inputRef} type="text" />
+          <button onClick={focusInput}>Focus</button>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+  <Tab label="Valeurs Persistantes" value="persistantes">
+    ```jsx showLineNumbers
+    function Compteur() {
+      const [count, setCount] = useState(0);
+      const rendersRef = useRef(0);
+      
+      useEffect(() => {
+        rendersRef.current += 1;
+      });
+      
+      return (
+        <div>
+          <p>Compteur : {count}</p>
+          <p>Rendus : {rendersRef.current}</p>
+          <button onClick={() => setCount(c => c + 1)}>
+            Incrémenter
+          </button>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## useMemo et useCallback
+
+<Cards>
+  <Card title="useMemo" icon="🧮">
+    ```jsx showLineNumbers
+    const valeurCalculee = useMemo(() => {
+      return expensiveOperation(prop1, prop2);
+    }, [prop1, prop2]);
+    ```
+  </Card>
+  <Card title="useCallback" icon="🎯">
+    ```jsx showLineNumbers
+    const handleClick = useCallback(() => {
+      console.log(count);
+    }, [count]);
+    ```
+  </Card>
+</Cards>
+
+## Exemple Pratique : Application de Notes
+
+<Tabs>
+  <Tab label="Structure" value="structure">
+    <Files>
+      <Folder name="components" defaultOpen>
+        <File name="NoteApp.jsx" />
+        <File name="NoteList.jsx" />
+        <File name="NoteEditor.jsx" />
+        <File name="NoteSearch.jsx" />
+      </Folder>
+    </Files>
+  </Tab>
+  <Tab label="Code" value="code">
+    ```jsx showLineNumbers
+    function NoteApp() {
+      const [notes, setNotes] = useState([]);
+      const [search, setSearch] = useState('');
+      
+      // Persistance des notes
+      useEffect(() => {
+        const savedNotes = localStorage.getItem('notes');
+        if (savedNotes) {
+          setNotes(JSON.parse(savedNotes));
+        }
+      }, []);
+      
+      // Sauvegarde automatique
+      useEffect(() => {
+        localStorage.setItem('notes', JSON.stringify(notes));
+      }, [notes]);
+      
+      // Recherche optimisée
+      const filteredNotes = useMemo(() => {
+        return notes.filter(note =>
+          note.text.toLowerCase().includes(search.toLowerCase())
+        );
+      }, [notes, search]);
+      
+      // Gestionnaire optimisé
+      const addNote = useCallback((text) => {
+        setNotes(prev => [...prev, {
+          id: Date.now(),
+          text,
+          createdAt: new Date()
+        }]);
+      }, []);
+      
+      return (
+        <div>
+          <NoteSearch value={search} onChange={setSearch} />
+          <NoteEditor onAdd={addNote} />
+          <NoteList notes={filteredNotes} />
+        </div>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Hooks Personnalisés
+
+<Steps>
+### Création d'un Hook
+1. **Définition du Hook**
+```jsx showLineNumbers
+function useFormField(initialValue = '') {
+  const [value, setValue] = useState(initialValue);
+  const [error, setError] = useState('');
+  
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    setError('');
+  };
+  
+  const validate = (rules) => {
+    if (rules.required && !value) {
+      setError('Ce champ est requis');
+      return false;
+    }
+    return true;
+  };
+  
+  return {
+    value,
+    error,
+    onChange: handleChange,
+    validate
+  };
+}
+```
+
+2. **Utilisation du Hook**
+```jsx showLineNumbers
+function LoginForm() {
+  const email = useFormField('');
+  const password = useFormField('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (email.validate({ required: true }) &&
+        password.validate({ required: true })) {
+      // Soumission du formulaire
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        {...email}
+        placeholder="Email"
+      />
+      {email.error && <span>{email.error}</span>}
+      
+      <input
+        type="password"
+        {...password}
+        placeholder="Mot de passe"
+      />
+      {password.error && <span>{password.error}</span>}
+      
+      <button type="submit">Connexion</button>
+    </form>
+  );
+}
+```
+</Steps>
+
+## Règles des Hooks
+
+<Cards>
+  <Card title="Niveau Racine" icon="🌳">
+    Appelez les hooks uniquement au niveau racine des composants
+  </Card>
+  <Card title="Composants React" icon="⚛️">
+    Utilisez les hooks uniquement dans des composants React ou d'autres hooks
+  </Card>
+  <Card title="Ordre Stable" icon="📝">
+    Gardez l'ordre des appels de hooks stable entre les rendus
+  </Card>
+  <Card title="Dépendances" icon="🔄">
+    Spécifiez toutes les dépendances nécessaires
+  </Card>
+</Cards>
+
+## Exercices Pratiques
+
+<Steps>
+### Exercices
+1. Créez un hook `useLocalStorage` :
+   - Synchronisation avec localStorage
+   - Gestion des erreurs
+   - Support de différents types
+
+2. Implémentez un hook `useTheme` :
+   - Mode clair/sombre
+   - Persistance des préférences
+   - Transitions fluides
+
+3. Développez un hook `useFetch` :
+   - Gestion du chargement
+   - Gestion des erreurs
+   - Cache des données
+</Steps>
+
+<Callout type="warning">
+  N'oubliez pas de gérer les cas d'erreur et de nettoyage dans vos hooks personnalisés !
+</Callout>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Styling en CSS" href="styling-css" icon="🎨">
+    Apprenez à styler vos composants
+  </Card>
+  <Card title="Formulaires" href="formulaires" icon="📝">
+    Créez des formulaires interactifs
+  </Card>
+</Cards> 

@@ -1,0 +1,209 @@
+---
+title: Les Composants React
+description: Découvrez les fondamentaux des composants React, les blocs de construction essentiels de toute application React.
+---
+
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Qu'est-ce qu'un Composant ?
+
+<Callout type="info">
+  Un composant React est une fonction JavaScript qui retourne du JSX (HTML + JavaScript) et peut accepter des propriétés (props) en entrée.
+</Callout>
+
+## Types de Composants
+
+<Tabs>
+  <Tab label="Composant Fonctionnel" value="fonctionnel">
+    ```jsx showLineNumbers
+    function Salutation({ nom }) {
+      return <h1>Bonjour {nom} !</h1>;
+    }
+    ```
+  </Tab>
+  <Tab label="Composant Classe (Legacy)" value="classe">
+    ```jsx showLineNumbers
+    class Salutation extends React.Component {
+      render() {
+        return <h1>Bonjour {this.props.nom} !</h1>;
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Structure d'un Composant
+
+  <Files>
+  <Folder name="components" defaultOpen>
+    <File name="Button.jsx" />
+    <File name="Card.jsx" />
+    <File name="Header.jsx" />
+    <File name="Footer.jsx" />
+  </Folder>
+</Files>
+
+## Création de Composants
+
+<Steps>
+### Étapes de création
+1. Créez un nouveau fichier `.jsx`
+2. Importez React si nécessaire
+3. Définissez votre fonction composant
+4. Exportez le composant
+</Steps>
+
+### Exemple Complet
+
+```jsx showLineNumbers
+// Button.jsx
+import React from 'react';
+
+function Button({ label, onClick, type = 'primary' }) {
+  return (
+    <button 
+      className={`button ${type}`}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+export default Button;
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Nommage" icon="📝">
+    Utilisez la convention PascalCase pour les noms de composants
+  </Card>
+  <Card title="Responsabilité Unique" icon="🎯">
+    Un composant doit avoir une seule responsabilité
+  </Card>
+  <Card title="Props" icon="🔄">
+    Validez vos props avec PropTypes ou TypeScript
+  </Card>
+  <Card title="Organisation" icon="📁">
+    Un composant par fichier
+  </Card>
+</Cards>
+
+## Composition de Composants
+
+<Steps>
+### Exemple de composition
+1. Créez des composants atomiques
+```jsx
+function Avatar({ url, alt }) {
+  return <img src={url} alt={alt} className="avatar" />;
+}
+```
+
+2. Créez des composants composites
+```jsx
+function UserCard({ user }) {
+  return (
+    <div className="user-card">
+      <Avatar url={user.avatar} alt={user.name} />
+      <h2>{user.name}</h2>
+      <p>{user.bio}</p>
+    </div>
+  );
+}
+```
+
+3. Utilisez la composition pour créer des interfaces complexes
+```jsx
+function UserList({ users }) {
+  return (
+    <div className="user-list">
+      {users.map(user => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+```
+</Steps>
+
+## Patterns Courants
+
+<Tabs>
+  <Tab label="Container/Présentation" value="container">
+    ```jsx showLineNumbers
+    // Container
+    function UserListContainer() {
+      const [users, setUsers] = useState([]);
+      
+      useEffect(() => {
+        // Chargement des données
+        fetchUsers().then(setUsers);
+      }, []);
+      
+      return <UserList users={users} />;
+    }
+
+    // Présentation
+    function UserList({ users }) {
+      return (
+        <div>
+          {users.map(user => (
+            <UserCard key={user.id} user={user} />
+          ))}
+        </div>
+      );
+    }
+    ```
+  </Tab>
+  <Tab label="Composant Composé" value="compose">
+    ```jsx showLineNumbers
+    function Select({ children }) {
+      return (
+        <select>{children}</select>
+      );
+    }
+
+    Select.Option = function Option({ value, children }) {
+      return (
+        <option value={value}>{children}</option>
+      );
+    };
+
+    // Utilisation
+    <Select>
+      <Select.Option value="1">Option 1</Select.Option>
+      <Select.Option value="2">Option 2</Select.Option>
+    </Select>
+    ```
+  </Tab>
+</Tabs>
+
+## Exercices Pratiques
+
+<Steps>
+### Exercices
+1. Créez un composant `Button` réutilisable avec différentes variantes
+2. Créez un composant `Card` qui accepte un titre, une image et du contenu
+3. Créez une barre de navigation avec des liens et un logo
+4. Combinez ces composants pour créer une page complète
+</Steps>
+
+<Callout type="warning">
+  N'oubliez pas de toujours décomposer vos interfaces en petits composants réutilisables !
+</Callout>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Props et Communication" href="props-communication" icon="🔄">
+    Apprenez à faire communiquer vos composants
+  </Card>
+  <Card title="État et Événements" href="etat-evenements" icon="⚡">
+    Gérez l'état et les interactions utilisateur
+  </Card>
+</Cards> 
