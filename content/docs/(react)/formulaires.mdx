@@ -3,7 +3,6 @@ title: Gestion des Formulaires en React
 description: Apprenez à créer et gérer des formulaires interactifs en React, avec validation et bonnes pratiques.
 ---
 
-import { File, Folder, Files } from 'fumadocs-ui/components/files';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
@@ -15,7 +14,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Formulaires Contrôlés vs Non-Contrôlés
 
-<Tabs>
+<Tabs items={['controle', 'non-controle']}>
   <Tab label="Formulaire Contrôlé" value="controle">
     ```jsx showLineNumbers
     function FormControle() {

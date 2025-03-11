@@ -8,7 +8,9 @@ import {
 import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import ButtonGithub from '@/app/components/ui/button-github';
-
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -26,6 +28,12 @@ export default async function Page(props: {
       <DocsBody>
         <MDX components={{
           ...defaultMdxComponents,
+    
+          Callout,
+          Tabs,
+          Tab,
+          Steps,
+          Step,
         }} />
       </DocsBody>
       <div className='mt-4'>
