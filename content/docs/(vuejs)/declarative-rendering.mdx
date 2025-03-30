@@ -1,0 +1,176 @@
+---
+title: Rendu Déclaratif en Vue.js
+description: Découvrez le rendu déclaratif en Vue.js, la réactivité et comment afficher dynamiquement du contenu dans vos templates.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Qu'est-ce que le Rendu Déclaratif ?
+
+<Callout type="info">
+  Le rendu déclaratif est une caractéristique fondamentale de Vue.js qui permet de décrire comment l'interface utilisateur devrait apparaître en fonction de l'état de l'application.
+</Callout>
+
+## Les Composants Vue
+
+<Files>
+  <Folder name="vue-app" defaultOpen>
+    <Folder name="src" defaultOpen>
+      <File name="App.vue" />
+      <File name="main.js" />
+      <Folder name="components">
+        <File name="HelloWorld.vue" />
+      </Folder>
+    </Folder>
+    <File name="package.json" />
+  </Folder>
+</Files>
+
+## Comprendre les SFC (Single-File Components)
+
+<Callout type="info">
+  Un SFC (Single-File Component) est un fichier `.vue` qui encapsule la structure (HTML), le style (CSS) et la logique (JavaScript) d'un composant.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+// Logique du composant
+</script>
+
+<template>
+<!-- Structure HTML -->
+</template>
+
+<style>
+/* Styles CSS */
+</style>
+```
+
+## La Réactivité en Vue.js
+
+<Tabs items={['reactive', 'ref']}>
+  <Tab label="reactive()" value="reactive">
+    ```js showLineNumbers
+    import { reactive } from 'vue'
+
+    const counter = reactive({
+      count: 0
+    })
+
+    console.log(counter.count) // 0
+    counter.count++ // La mise à jour déclenche un rendu
+    ```
+    Utilisez `reactive()` pour les objets et les tableaux.
+  </Tab>
+  <Tab label="ref()" value="ref">
+    ```js showLineNumbers
+    import { ref } from 'vue'
+
+    const message = ref('Bonjour Vue!')
+    
+    console.log(message.value) // "Bonjour Vue!"
+    message.value = 'Message modifié' // La mise à jour déclenche un rendu
+    ```
+    Utilisez `ref()` pour les valeurs primitives (string, number, boolean).
+  </Tab>
+</Tabs>
+
+<Callout type="warning">
+  N'oubliez pas qu'à l'intérieur des fonctions JavaScript, vous devez utiliser `.value` pour accéder ou modifier une valeur ref. Dans les templates Vue, la propriété `.value` est automatiquement "unwrapped".
+</Callout>
+
+## Affichage Dynamique avec les Templates
+
+<Steps>
+### Types d'affichage dynamique
+1. **Interpolation de texte** avec double accolades `{{ }}`
+2. **Binding d'attributs** avec `v-bind:` ou `:` (raccourci)
+3. **Expressions JavaScript** dans les interpolations
+</Steps>
+
+### Exemples
+
+```vue showLineNumbers
+<template>
+  <!-- Interpolation de texte simple -->
+  <h1>{{ message }}</h1>
+  
+  <!-- Binding d'attributs -->
+  <img :src="imageUrl" :alt="imageDescription">
+  
+  <!-- Expressions JavaScript -->
+  <p>{{ message.split('').reverse().join('') }}</p>
+  
+  <!-- Expressions conditionnelles -->
+  <span>{{ isActive ? 'Actif' : 'Inactif' }}</span>
+</template>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un composant avec différents types d'état réactif et utilisez-les dans un template.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive } from 'vue'
+
+// À vous de créer votre état réactif ici !
+const title = ref('Mon Super Composant')
+const counter = reactive({ value: 0 })
+const isVisible = ref(true)
+
+function incrementCounter() {
+  counter.value++
+}
+</script>
+
+<template>
+  <div :class="{ hidden: !isVisible }">
+    <h1>{{ title }}</h1>
+    <p>Compteur : {{ counter.value }}</p>
+    <button @click="incrementCounter">Incrémenter</button>
+    <button @click="isVisible = !isVisible">
+      {{ isVisible ? 'Cacher' : 'Afficher' }}
+    </button>
+  </div>
+</template>
+
+<style>
+.hidden {
+  display: none;
+}
+</style>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Nommage Descriptif" icon="📝">
+    Utilisez des noms de variables qui décrivent clairement leur objectif
+  </Card>
+  <Card title="Séparation des Préoccupations" icon="🔄">
+    Gardez la logique d'état séparée de la logique de rendu
+  </Card>
+  <Card title="Computed Properties" icon="🧮">
+    Utilisez des propriétés calculées pour les transformations de données
+  </Card>
+  <Card title="Réutilisabilité" icon="♻️">
+    Concevez vos composants pour qu'ils soient réutilisables
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Attributs dynamiques" href="attributs-dynamiques" icon="🔄">
+    Découvrez comment lier dynamiquement des attributs HTML
+  </Card>
+  <Card title="Écouteurs d'événements" href="ecouteurs-evenements" icon="👂">
+    Apprenez à réagir aux interactions utilisateur
+  </Card>
+</Cards>

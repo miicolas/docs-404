@@ -1,0 +1,624 @@
+---
+title: Rendu de Listes en Vue.js
+description: Apprenez à rendre dynamiquement des listes d'éléments en Vue.js avec la directive v-for.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction au Rendu de Listes
+
+<Callout type="info">
+  Le rendu de listes est une fonctionnalité essentielle qui permet d'afficher des séries d'éléments à partir de tableaux ou d'objets, rendant les interfaces utilisateur dynamiques et réactives.
+</Callout>
+
+## La Directive v-for
+
+<Steps>
+### Syntaxe de base
+1. **Pour les tableaux** : `v-for="item in items"` ou `v-for="(item, index) in items"`
+2. **Pour les objets** : `v-for="value in object"` ou `v-for="(value, key, index) in object"`
+3. **Pour les nombres** : `v-for="n in 10"` (boucle de 1 à 10)
+</Steps>
+
+## Rendu de Tableaux
+
+<Tabs items={['basique', 'index', 'destructuration']}>
+  <Tab label="Utilisation basique" value="basique">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const fruits = ref(['Pomme', 'Banane', 'Orange', 'Fraise'])
+    </script>
+    
+    <template>
+      <ul>
+        <li v-for="fruit in fruits">
+          {{ fruit }}
+        </li>
+      </ul>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Avec index" value="index">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const fruits = ref(['Pomme', 'Banane', 'Orange', 'Fraise'])
+    </script>
+    
+    <template>
+      <ul>
+        <li v-for="(fruit, index) in fruits">
+          {{ index + 1 }}. {{ fruit }}
+        </li>
+      </ul>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Avec destructuration" value="destructuration">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const users = ref([
+      { id: 1, name: 'Alice', role: 'Admin' },
+      { id: 2, name: 'Bob', role: 'User' },
+      { id: 3, name: 'Charlie', role: 'Moderator' }
+    ])
+    </script>
+    
+    <template>
+      <ul>
+        <li v-for="{ name, role } in users">
+          {{ name }} - {{ role }}
+        </li>
+      </ul>
+    </template>
+    ```
+  </Tab>
+</Tabs>
+
+## L'Attribut key
+
+<Callout type="warning">
+  L'attribut `key` est essentiel pour aider Vue à identifier de manière unique chaque élément de la liste, ce qui permet une meilleure optimisation du rendu et la préservation de l'état des composants.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+
+const todos = ref([
+  { id: 1, text: 'Apprendre Vue', done: true },
+  { id: 2, text: 'Créer un projet', done: false },
+  { id: 3, text: 'Partager avec la communauté', done: false }
+])
+</script>
+
+<template>
+  <ul>
+    <li v-for="todo in todos" :key="todo.id">
+      <input type="checkbox" v-model="todo.done">
+      <span :class="{ 'completed': todo.done }">{{ todo.text }}</span>
+    </li>
+  </ul>
+</template>
+
+<style>
+.completed {
+  text-decoration: line-through;
+  color: #999;
+}
+</style>
+```
+
+## Rendu d'Objets
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+
+const user = ref({
+  name: 'Marie',
+  age: 32,
+  location: 'Paris',
+  job: 'Développeuse'
+})
+</script>
+
+<template>
+  <div class="user-info">
+    <h3>Information utilisateur</h3>
+    <ul>
+      <li v-for="(value, key) in user" :key="key">
+        <strong>{{ key }}:</strong> {{ value }}
+      </li>
+    </ul>
+    
+    <!-- Avec index (rarement utilisé) -->
+    <div class="indexed">
+      <h4>Avec index</h4>
+      <p v-for="(value, key, index) in user" :key="key">
+        Propriété #{{ index + 1 }}: {{ key }} = {{ value }}
+      </p>
+    </div>
+  </div>
+</template>
+```
+
+## v-for avec Plage de Nombres
+
+```vue showLineNumbers
+<script setup>
+function getOddEven(n) {
+  return n % 2 === 0 ? 'pair' : 'impair'
+}
+</script>
+
+<template>
+  <div>
+    <h3>Liste de nombres</h3>
+    <ul>
+      <li v-for="n in 5" :key="n">
+        Numéro {{ n }} ({{ getOddEven(n) }})
+      </li>
+    </ul>
+  </div>
+</template>
+```
+
+## v-for avec v-if
+
+<Callout type="warning">
+  Il est déconseillé d'utiliser `v-if` et `v-for` sur le même élément en raison de problèmes de priorité. Utilisez plutôt un élément wrapper ou computed property.
+</Callout>
+
+<Tabs items={['mauvais', 'bon-wrapper', 'bon-computed']}>
+  <Tab label="À éviter" value="mauvais">
+    ```vue showLineNumbers
+    <template>
+      <!-- ❌ Non recommandé: v-if et v-for sur le même élément -->
+      <li 
+        v-for="user in users" 
+        v-if="user.isActive" 
+        :key="user.id"
+      >
+        {{ user.name }}
+      </li>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Bon (avec wrapper)" value="bon-wrapper">
+    ```vue showLineNumbers
+    <template>
+      <!-- ✅ Recommandé: Utiliser un <template> comme wrapper -->
+      <template v-for="user in users" :key="user.id">
+        <li v-if="user.isActive">
+          {{ user.name }}
+        </li>
+      </template>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Bon (avec computed)" value="bon-computed">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, computed } from 'vue'
+    
+    const users = ref([
+      { id: 1, name: 'Alice', isActive: true },
+      { id: 2, name: 'Bob', isActive: false },
+      { id: 3, name: 'Charlie', isActive: true }
+    ])
+    
+    // ✅ Recommandé: Filtrer avec une computed property
+    const activeUsers = computed(() => {
+      return users.value.filter(user => user.isActive)
+    })
+    </script>
+    
+    <template>
+      <ul>
+        <li v-for="user in activeUsers" :key="user.id">
+          {{ user.name }}
+        </li>
+      </ul>
+    </template>
+    ```
+  </Tab>
+</Tabs>
+
+## Modification des Listes
+
+<Callout type="info">
+  Vue peut détecter les modifications de tableau qui changent l'état interne, mais certaines opérations nécessitent des approches spécifiques.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+
+const items = ref(['A', 'B', 'C', 'D', 'E'])
+
+function addItem() {
+  items.value.push('Nouvel élément')
+}
+
+function removeItem(index) {
+  items.value.splice(index, 1)
+}
+
+function replaceItems() {
+  // Vue détecte ce changement car la référence du tableau change
+  items.value = ['X', 'Y', 'Z']
+}
+
+function reverseItems() {
+  // Méthode qui modifie le tableau original
+  items.value.reverse()
+}
+
+function sortItems() {
+  // Pour éviter de modifier le tableau original
+  // on peut créer une copie
+  const sorted = [...items.value].sort()
+  items.value = sorted
+}
+</script>
+
+<template>
+  <div>
+    <button @click="addItem">Ajouter</button>
+    <button @click="replaceItems">Remplacer</button>
+    <button @click="reverseItems">Inverser</button>
+    <button @click="sortItems">Trier</button>
+    
+    <ul>
+      <li v-for="(item, index) in items" :key="item">
+        {{ item }}
+        <button @click="removeItem(index)" class="remove-btn">×</button>
+      </li>
+    </ul>
+  </div>
+</template>
+```
+
+## Composants et v-for
+
+<Callout type="info">
+  Vous pouvez utiliser `v-for` pour rendre une liste de composants, ce qui est utile pour structurer votre code et réutiliser des éléments d'interface.
+</Callout>
+
+```vue showLineNumbers
+<!-- TodoItem.vue -->
+<script setup>
+defineProps({
+  todo: {
+    type: Object,
+    required: true
+  }
+})
+
+defineEmits(['toggle', 'remove'])
+</script>
+
+<template>
+  <li>
+    <input 
+      type="checkbox" 
+      :checked="todo.done" 
+      @change="$emit('toggle')"
+    >
+    <span :class="{ 'done': todo.done }">{{ todo.text }}</span>
+    <button @click="$emit('remove')">Supprimer</button>
+  </li>
+</template>
+
+<!-- App.vue -->
+<script setup>
+import { ref } from 'vue'
+import TodoItem from './TodoItem.vue'
+
+const todos = ref([
+  { id: 1, text: 'Apprendre Vue', done: true },
+  { id: 2, text: 'Créer une application', done: false },
+  { id: 3, text: 'Déployer le projet', done: false }
+])
+
+function toggleTodo(id) {
+  const todo = todos.value.find(todo => todo.id === id)
+  if (todo) {
+    todo.done = !todo.done
+  }
+}
+
+function removeTodo(id) {
+  todos.value = todos.value.filter(todo => todo.id !== id)
+}
+</script>
+
+<template>
+  <ul>
+    <TodoItem
+      v-for="todo in todos"
+      :key="todo.id"
+      :todo="todo"
+      @toggle="toggleTodo(todo.id)"
+      @remove="removeTodo(todo.id)"
+    />
+  </ul>
+</template>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez une liste de produits avec filtrage et tri.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+const products = ref([
+  { id: 1, name: 'Laptop', price: 1200, category: 'Électronique', stock: 10 },
+  { id: 2, name: 'Smartphone', price: 800, category: 'Électronique', stock: 15 },
+  { id: 3, name: 'Chaise', price: 100, category: 'Mobilier', stock: 0 },
+  { id: 4, name: 'Table', price: 300, category: 'Mobilier', stock: 5 },
+  { id: 5, name: 'Livre', price: 20, category: 'Livres', stock: 20 },
+  { id: 6, name: 'Écouteurs', price: 150, category: 'Électronique', stock: 8 }
+])
+
+const categories = computed(() => {
+  const cats = new Set(products.value.map(p => p.category))
+  return ['Toutes', ...cats]
+})
+
+const sortOptions = [
+  { value: 'name-asc', label: 'Nom (A-Z)' },
+  { value: 'name-desc', label: 'Nom (Z-A)' },
+  { value: 'price-asc', label: 'Prix (croissant)' },
+  { value: 'price-desc', label: 'Prix (décroissant)' }
+]
+
+const selectedCategory = ref('Toutes')
+const selectedSort = ref('name-asc')
+const showOutOfStock = ref(false)
+const searchQuery = ref('')
+
+const filteredProducts = computed(() => {
+  let result = products.value
+
+  // Filtrer par catégorie
+  if (selectedCategory.value !== 'Toutes') {
+    result = result.filter(p => p.category === selectedCategory.value)
+  }
+  
+  // Filtrer par disponibilité en stock
+  if (!showOutOfStock.value) {
+    result = result.filter(p => p.stock > 0)
+  }
+  
+  // Filtrer par recherche
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(p => 
+      p.name.toLowerCase().includes(query) || 
+      p.category.toLowerCase().includes(query)
+    )
+  }
+  
+  // Trier les résultats
+  const [sortKey, sortDir] = selectedSort.value.split('-')
+  
+  result = [...result].sort((a, b) => {
+    let comparison = 0
+    
+    if (sortKey === 'name') {
+      comparison = a.name.localeCompare(b.name)
+    } else if (sortKey === 'price') {
+      comparison = a.price - b.price
+    }
+    
+    return sortDir === 'desc' ? -comparison : comparison
+  })
+  
+  return result
+})
+</script>
+
+<template>
+  <div class="product-catalog">
+    <h2>Catalogue de Produits</h2>
+    
+    <div class="filters">
+      <div class="search">
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="Rechercher..."
+        >
+      </div>
+      
+      <div class="filter-group">
+        <label for="category">Catégorie:</label>
+        <select id="category" v-model="selectedCategory">
+          <option v-for="cat in categories" :key="cat">{{ cat }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="sort">Trier par:</label>
+        <select id="sort" v-model="selectedSort">
+          <option 
+            v-for="option in sortOptions" 
+            :key="option.value" 
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group checkbox">
+        <input type="checkbox" id="show-stock" v-model="showOutOfStock">
+        <label for="show-stock">Inclure produits en rupture</label>
+      </div>
+    </div>
+    
+    <div v-if="filteredProducts.length === 0" class="no-results">
+      Aucun produit ne correspond à vos critères
+    </div>
+    
+    <ul class="product-list" v-else>
+      <li 
+        v-for="product in filteredProducts" 
+        :key="product.id"
+        class="product-card"
+        :class="{ 'out-of-stock': product.stock === 0 }"
+      >
+        <div class="product-name">{{ product.name }}</div>
+        <div class="product-category">{{ product.category }}</div>
+        <div class="product-price">{{ product.price }}€</div>
+        <div class="product-stock">
+          <span v-if="product.stock > 0">
+            En stock ({{ product.stock }})
+          </span>
+          <span v-else class="no-stock">
+            Rupture de stock
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<style scoped>
+.product-catalog {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.product-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.product-category {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.no-stock {
+  color: #d9534f;
+}
+
+.out-of-stock {
+  opacity: 0.6;
+}
+
+.no-results {
+  text-align: center;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+</style>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Toujours Utiliser :key" icon="🔑">
+    Fournissez toujours une clé unique à chaque élément dans v-for
+  </Card>
+  <Card title="Éviter v-if avec v-for" icon="⚠️">
+    Préférez filtrer les données en amont ou utiliser un élément wrapper
+  </Card>
+  <Card title="Computed Properties" icon="🧮">
+    Utilisez computed properties pour le filtrage et le tri complexes
+  </Card>
+  <Card title="Séparation en Composants" icon="🧩">
+    Extrayez des composants réutilisables pour les éléments de liste complexes
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Propriétés Computed" href="proprietes-computed" icon="🧮">
+    Apprenez à créer des propriétés calculées réactives
+  </Card>
+  <Card title="Lifecycle Hooks" href="lifecycle-hooks" icon="🔄">
+    Découvrez les hooks du cycle de vie des composants
+  </Card>
+</Cards> 

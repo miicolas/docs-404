@@ -1,0 +1,422 @@
+---
+title: Écouteurs d'Événements en Vue.js
+description: Apprenez à gérer les interactions utilisateur et à réagir aux événements dans vos composants Vue.js.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Événements
+
+<Callout type="info">
+  Les écouteurs d'événements vous permettent de détecter et réagir aux interactions utilisateur comme les clics, la saisie, le survol, etc.
+</Callout>
+
+## La Directive v-on
+
+<Steps>
+### Syntaxe de base
+1. Directive complète : `v-on:event="handler"`
+2. Forme abrégée (recommandée) : `@event="handler"`
+</Steps>
+
+## Types d'Événements Courants
+
+<Tabs items={['souris', 'clavier', 'formulaire', 'personnalise']}>
+  <Tab label="Événements souris" value="souris">
+    ```vue showLineNumbers
+    <template>
+      <button @click="handleClick">Cliquez-moi</button>
+      <div @mouseover="handleMouseOver" @mouseout="handleMouseOut">
+        Survolez-moi
+      </div>
+    </template>
+    
+    <script setup>
+    function handleClick() {
+      alert('Bouton cliqué!')
+    }
+    
+    function handleMouseOver() {
+      console.log('Survol détecté')
+    }
+    
+    function handleMouseOut() {
+      console.log('Fin du survol')
+    }
+    </script>
+    ```
+  </Tab>
+  <Tab label="Événements clavier" value="clavier">
+    ```vue showLineNumbers
+    <template>
+      <input 
+        @keyup="handleKeyUp"
+        @keydown.enter="handleEnter"
+        placeholder="Tapez quelque chose"
+      />
+    </template>
+    
+    <script setup>
+    function handleKeyUp(event) {
+      console.log('Touche relâchée:', event.key)
+    }
+    
+    function handleEnter() {
+      alert('Touche Entrée pressée!')
+    }
+    </script>
+    ```
+  </Tab>
+  <Tab label="Événements formulaire" value="formulaire">
+    ```vue showLineNumbers
+    <template>
+      <form @submit.prevent="handleSubmit">
+        <input v-model="username" @change="handleChange" />
+        <button type="submit">Envoyer</button>
+      </form>
+    </template>
+    
+    <script setup>
+    import { ref } from 'vue'
+    
+    const username = ref('')
+    
+    function handleSubmit() {
+      alert(`Formulaire soumis avec: ${username.value}`)
+    }
+    
+    function handleChange(event) {
+      console.log('Valeur modifiée:', event.target.value)
+    }
+    </script>
+    ```
+  </Tab>
+  <Tab label="Événements personnalisés" value="personnalise">
+    ```vue showLineNumbers
+    <!-- ComposantEnfant.vue -->
+    <template>
+      <button @click="$emit('action-personnalisee', 'données')">
+        Déclencher événement
+      </button>
+    </template>
+    
+    <!-- ComposantParent.vue -->
+    <template>
+      <ComposantEnfant @action-personnalisee="handleAction" />
+    </template>
+    
+    <script setup>
+    import ComposantEnfant from './ComposantEnfant.vue'
+    
+    function handleAction(donnees) {
+      console.log('Événement personnalisé reçu avec:', donnees)
+    }
+    </script>
+    ```
+  </Tab>
+</Tabs>
+
+## Modificateurs d'Événements
+
+<Callout type="info">
+  Vue.js propose des modificateurs qui facilitent la gestion des comportements courants des événements.
+</Callout>
+
+<Steps>
+### Modificateurs courants
+1. `.prevent` - Équivalent à `event.preventDefault()`
+2. `.stop` - Équivalent à `event.stopPropagation()`
+3. `.once` - Exécute le gestionnaire une seule fois
+4. `.capture` - Utilise le mode capture
+5. `.self` - Déclenche uniquement si l'événement provient de l'élément lui-même
+</Steps>
+
+```vue showLineNumbers
+<template>
+  <!-- Empêche le comportement par défaut -->
+  <a @click.prevent="handleClick" href="https://vuejs.org">
+    Lien avec prevent
+  </a>
+  
+  <!-- Arrête la propagation -->
+  <div @click="handleOuterClick">
+    Élément externe
+    <button @click.stop="handleInnerClick">
+      Élément interne
+    </button>
+  </div>
+  
+  <!-- S'exécute une seule fois -->
+  <button @click.once="handleOneTimeClick">
+    Cliquez-moi une fois
+  </button>
+</template>
+```
+
+## Modificateurs de Touches
+
+<Cards>
+  <Card title="Touches système" icon="⌨️">
+    `.ctrl`, `.alt`, `.shift`, `.meta` (Cmd sur Mac, Windows sur PC)
+  </Card>
+  <Card title="Touches de navigation" icon="🔍">
+    `.enter`, `.tab`, `.delete`, `.esc`, `.space`, `.up`, `.down`, `.left`, `.right`
+  </Card>
+  <Card title="Combinaisons" icon="🔣">
+    Peuvent être chaînés: `@keyup.alt.enter="handleAltEnter"`
+  </Card>
+</Cards>
+
+```vue showLineNumbers
+<template>
+  <input @keyup.enter="submit" placeholder="Appuyez sur Entrée" />
+  <input @keyup.shift.a="handleShiftA" placeholder="Shift+A" />
+  <input @keyup.ctrl.enter="handleCtrlEnter" placeholder="Ctrl+Entrée" />
+</template>
+```
+
+## Accès à l'Objet Événement
+
+<Callout type="warning">
+  Dans les gestionnaires d'événements inline, vous pouvez accéder à l'objet événement avec `$event`.
+</Callout>
+
+```vue showLineNumbers
+<template>
+  <!-- Méthode avec paramètre et événement -->
+  <button @click="handleClick('bouton', $event)">
+    Clic avec paramètre
+  </button>
+  
+  <!-- Expression inline -->
+  <input @input="message = $event.target.value" />
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const message = ref('')
+
+function handleClick(element, event) {
+  console.log(`Clic sur ${element}:`, event)
+  console.log('Coordonnées:', event.clientX, event.clientY)
+}
+</script>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un composant de formulaire avec validation et différents types d'écouteurs d'événements.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive } from 'vue'
+
+const formData = reactive({
+  nom: '',
+  email: '',
+  message: ''
+})
+
+const errors = reactive({
+  nom: '',
+  email: '',
+  message: ''
+})
+
+const formSubmitted = ref(false)
+
+function validateEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email)
+}
+
+function validateField(field, value) {
+  if (field === 'email' && value && !validateEmail(value)) {
+    errors[field] = 'Format d\'email invalide'
+    return false
+  } else if (!value) {
+    errors[field] = 'Ce champ est requis'
+    return false
+  }
+  
+  errors[field] = ''
+  return true
+}
+
+function handleInput(field, event) {
+  formData[field] = event.target.value
+  validateField(field, formData[field])
+}
+
+function handleSubmit() {
+  let isValid = true
+  
+  // Valider tous les champs
+  Object.keys(formData).forEach(field => {
+    if (!validateField(field, formData[field])) {
+      isValid = false
+    }
+  })
+  
+  if (isValid) {
+    formSubmitted.value = true
+    // Envoyer les données...
+    console.log('Formulaire soumis:', formData)
+  }
+}
+
+function handleReset() {
+  // Réinitialiser le formulaire
+  Object.keys(formData).forEach(field => {
+    formData[field] = ''
+    errors[field] = ''
+  })
+  formSubmitted.value = false
+}
+</script>
+
+<template>
+  <div class="form-container">
+    <div v-if="formSubmitted" class="success-message">
+      <h3>Formulaire soumis avec succès!</h3>
+      <button @click="handleReset">Nouveau formulaire</button>
+    </div>
+    
+    <form v-else @submit.prevent="handleSubmit">
+      <div class="form-group">
+        <label for="nom">Nom:</label>
+        <input 
+          id="nom"
+          type="text"
+          :class="{ 'error': errors.nom }"
+          @input="handleInput('nom', $event)"
+          @blur="validateField('nom', formData.nom)"
+        />
+        <span v-if="errors.nom" class="error-text">{{ errors.nom }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input 
+          id="email"
+          type="email"
+          :class="{ 'error': errors.email }"
+          @input="handleInput('email', $event)"
+          @blur="validateField('email', formData.email)"
+        />
+        <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="message">Message:</label>
+        <textarea 
+          id="message"
+          :class="{ 'error': errors.message }"
+          @input="handleInput('message', $event)"
+          @blur="validateField('message', formData.message)"
+        ></textarea>
+        <span v-if="errors.message" class="error-text">{{ errors.message }}</span>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" @click.ctrl.enter="handleSubmit">Envoyer</button>
+        <button type="button" @click="handleReset">Réinitialiser</button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<style>
+.form-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+input.error, textarea.error {
+  border-color: #dc3545;
+}
+
+.error-text {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="button"] {
+  background-color: #6c757d;
+}
+
+.success-message {
+  text-align: center;
+  padding: 20px;
+  background-color: #d4edda;
+  border-radius: 4px;
+}
+</style>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Noms Descriptifs" icon="📝">
+    Utilisez des noms de gestionnaires qui décrivent l'action plutôt que l'événement
+  </Card>
+  <Card title="Logique Séparée" icon="🧩">
+    Placez la logique complexe dans des méthodes, pas dans le template
+  </Card>
+  <Card title="Modificateurs" icon="🛠️">
+    Utilisez les modificateurs plutôt que de gérer manuellement les comportements courants
+  </Card>
+  <Card title="Délégation d'Événements" icon="📊">
+    Évitez d'attacher trop d'écouteurs à des éléments répétés
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Formulaires" href="formulaires" icon="📝">
+    Apprenez à créer des formulaires interactifs avec v-model
+  </Card>
+  <Card title="Rendu Conditionnel" href="rendu-conditionnel" icon="🔀">
+    Découvrez comment afficher conditionnellement des éléments
+  </Card>
+</Cards>

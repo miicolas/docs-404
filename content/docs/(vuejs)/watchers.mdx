@@ -1,0 +1,889 @@
+---
+title: Les Watchers en Vue.js
+description: Apprenez à surveiller les changements de données et à réagir en conséquence à l'aide des watchers en Vue.js.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Watchers
+
+<Callout type="info">
+  Les watchers sont des fonctions spéciales qui vous permettent de surveiller les changements d'une donnée réactive et d'exécuter du code en réaction à ces changements.
+</Callout>
+
+## Watchers vs Computed Properties
+
+<Cards>
+  <Card title="Computed Properties" icon="🧮">
+    - Calculer des valeurs dérivées en fonction d'autres données
+    - Mises en cache et réactives
+    - Idéales pour les transformations de données
+  </Card>
+  <Card title="Watchers" icon="👀">
+    - Réagir aux changements avec des effets secondaires
+    - Idéaux pour les opérations asynchrones
+    - Permettent l'accès aux valeurs précédentes et actuelles
+  </Card>
+</Cards>
+
+## Watchers Simples
+
+<Tabs items={['composition', 'options']}>
+  <Tab label="Composition API" value="composition">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, watch } from 'vue'
+    
+    const message = ref('Hello Vue!')
+    
+    // Surveiller une propriété réactive
+    watch(message, (newValue, oldValue) => {
+      console.log('Message changé:')
+      console.log('Nouvelle valeur:', newValue)
+      console.log('Ancienne valeur:', oldValue)
+    })
+    
+    function updateMessage() {
+      message.value = 'Message mis à jour à ' + new Date().toLocaleTimeString()
+    }
+    </script>
+    
+    <template>
+      <div>
+        <p>{{ message }}</p>
+        <button @click="updateMessage">Mettre à jour</button>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Options API" value="options">
+    ```vue showLineNumbers
+    <script>
+    export default {
+      data() {
+        return {
+          message: 'Hello Vue!'
+        }
+      },
+      
+      // Déclarer les watchers dans l'option "watch"
+      watch: {
+        message(newValue, oldValue) {
+          console.log('Message changé:')
+          console.log('Nouvelle valeur:', newValue)
+          console.log('Ancienne valeur:', oldValue)
+        }
+      },
+      
+      methods: {
+        updateMessage() {
+          this.message = 'Message mis à jour à ' + new Date().toLocaleTimeString()
+        }
+      }
+    }
+    </script>
+    
+    <template>
+      <div>
+        <p>{{ message }}</p>
+        <button @click="updateMessage">Mettre à jour</button>
+      </div>
+    </template>
+    ```
+  </Tab>
+</Tabs>
+
+## Surveiller des Sources de Données Complexes
+
+### Surveiller un Objet
+
+```vue showLineNumbers
+<script setup>
+import { reactive, watch } from 'vue'
+
+const user = reactive({
+  name: 'Alice',
+  age: 25,
+  address: {
+    city: 'Paris',
+    country: 'France'
+  }
+})
+
+// Surveiller l'objet entier (par défaut, surveillance non profonde)
+watch(user, (newValue, oldValue) => {
+  console.log('Utilisateur mis à jour:', newValue)
+  
+  // ⚠️ ATTENTION: Dans le cas d'un objet réactif (reactive),
+  // newValue et oldValue seront identiques car ils font référence
+  // au même objet qui a été modifié
+}, { deep: false })
+
+// Surveiller l'objet avec deep: true pour détecter les changements imbriqués
+watch(user, (newValue) => {
+  console.log('Changement détecté dans l\'objet utilisateur (y compris imbriqué):', newValue)
+  console.log('Ville:', newValue.address.city)
+}, { deep: true })
+
+// Surveiller une propriété spécifique de l'objet
+watch(() => user.age, (newAge, oldAge) => {
+  console.log(`L'âge a changé de ${oldAge} à ${newAge}`)
+})
+
+// Surveiller une propriété imbriquée
+watch(() => user.address.city, (newCity, oldCity) => {
+  console.log(`La ville a changé de ${oldCity} à ${newCity}`)
+})
+</script>
+
+<template>
+  <div>
+    <h2>Utilisateur</h2>
+    <div>
+      <label>Nom: </label>
+      <input v-model="user.name">
+    </div>
+    <div>
+      <label>Âge: </label>
+      <input type="number" v-model.number="user.age">
+    </div>
+    <div>
+      <label>Ville: </label>
+      <input v-model="user.address.city">
+    </div>
+    <div>
+      <label>Pays: </label>
+      <input v-model="user.address.country">
+    </div>
+  </div>
+</template>
+```
+
+### Surveiller Plusieurs Sources
+
+```vue showLineNumbers
+<script setup>
+import { ref, watch } from 'vue'
+
+const firstName = ref('Jean')
+const lastName = ref('Dupont')
+const age = ref(30)
+
+// Surveiller plusieurs sources à la fois
+watch([firstName, lastName], ([newFirstName, newLastName], [oldFirstName, oldLastName]) => {
+  console.log(
+    `Le nom a changé de ${oldFirstName} ${oldLastName} à ${newFirstName} ${newLastName}`
+  )
+})
+
+// Surveiller 3 sources avec une fonction de callback commune
+watch([firstName, lastName, age], (newValues, oldValues) => {
+  console.log('Nouvelles valeurs:', newValues)
+  console.log('Anciennes valeurs:', oldValues)
+  
+  const [newFirstName, newLastName, newAge] = newValues
+  const [oldFirstName, oldLastName, oldAge] = oldValues
+  
+  const changes = []
+  if (newFirstName !== oldFirstName) changes.push('prénom')
+  if (newLastName !== oldLastName) changes.push('nom')
+  if (newAge !== oldAge) changes.push('âge')
+  
+  console.log(`Changements détectés: ${changes.join(', ')}`)
+})
+</script>
+
+<template>
+  <div>
+    <div>
+      <label>Prénom: </label>
+      <input v-model="firstName">
+    </div>
+    <div>
+      <label>Nom: </label>
+      <input v-model="lastName">
+    </div>
+    <div>
+      <label>Âge: </label>
+      <input type="number" v-model.number="age">
+    </div>
+  </div>
+</template>
+```
+
+## Watchers Immédiats 
+
+<Callout type="info">
+  Par défaut, les watchers sont déclenchés uniquement lorsque la valeur surveillée change. Avec l'option `immediate: true`, le watcher s'exécute également dès sa création.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, watch } from 'vue'
+
+const searchQuery = ref('')
+const searchResults = ref([])
+const loading = ref(false)
+
+// Watcher immédiat qui se déclenche dès la création
+watch(searchQuery, async (newQuery) => {
+  if (newQuery.trim() === '') {
+    searchResults.value = []
+    return
+  }
+  
+  loading.value = true
+  try {
+    // Simulation d'une requête API
+    const response = await fetch(`https://api.example.com/search?q=${newQuery}`)
+    searchResults.value = await response.json()
+  } catch (error) {
+    console.error('Erreur de recherche:', error)
+    searchResults.value = []
+  } finally {
+    loading.value = false
+  }
+}, { immediate: true }) // ← Le watcher s'exécute immédiatement
+</script>
+
+<template>
+  <div>
+    <input 
+      v-model="searchQuery" 
+      placeholder="Rechercher..."
+      type="search"
+    />
+    
+    <div v-if="loading">Chargement...</div>
+    
+    <ul v-else-if="searchResults.length > 0">
+      <li v-for="result in searchResults" :key="result.id">
+        {{ result.title }}
+      </li>
+    </ul>
+    
+    <p v-else-if="searchQuery.trim() && !loading">
+      Aucun résultat trouvé.
+    </p>
+  </div>
+</template>
+```
+
+## Options Additionnelles des Watchers
+
+<Cards>
+  <Card title="deep" icon="🔍">
+    Surveiller de manière récursive les propriétés imbriquées d'un objet
+  </Card>
+  <Card title="immediate" icon="⚡">
+    Exécuter le watcher immédiatement lors de sa création
+  </Card>
+  <Card title="flush" icon="🔄">
+    Contrôler le timing de l'exécution du watcher (`'pre'`, `'post'`, `'sync'`)
+  </Card>
+  <Card title="onTrack/onTrigger" icon="🐛">
+    Hooks de débogage pour comprendre quand le watcher est déclenché
+  </Card>
+</Cards>
+
+```vue showLineNumbers
+<script setup>
+import { reactive, watch } from 'vue'
+
+const state = reactive({
+  nested: {
+    count: 0
+  },
+  items: ['a', 'b', 'c']
+})
+
+// Exemple complet avec plusieurs options
+watch(
+  () => state,
+  (newValue, oldValue) => {
+    console.log('État changé:', newValue)
+  },
+  {
+    deep: true,        // Surveillance profonde
+    immediate: true,   // Exécution immédiate
+    flush: 'post',     // Exécuter après la mise à jour du DOM
+    
+    // Hooks de débogage (en mode développement uniquement)
+    onTrack(event) {
+      console.log('Propriété suivie:', event)
+    },
+    onTrigger(event) {
+      console.log('Déclenchement du watcher:', event)
+    }
+  }
+)
+</script>
+```
+
+## Arrêter un Watcher
+
+<Callout type="warning">
+  La fonction `watch` retourne une fonction de nettoyage qui peut être appelée pour arrêter le watcher.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, watch, onBeforeUnmount } from 'vue'
+
+const count = ref(0)
+const isWatching = ref(true)
+
+// Créer un watcher et stocker la fonction d'arrêt
+const stopWatcher = watch(count, (newValue) => {
+  console.log('Le compteur a changé:', newValue)
+  
+  // Arrêter le watcher après un certain seuil
+  if (newValue >= 5) {
+    stopWatcher() // Arrêter manuellement
+    isWatching.value = false
+    console.log('Watcher arrêté car le seuil de 5 est atteint')
+  }
+})
+
+// Autre watcher pour démontrer l'arrêt dans onBeforeUnmount
+const anotherWatcher = watch(isWatching, (value) => {
+  console.log('État de surveillance changé:', value)
+})
+
+onBeforeUnmount(() => {
+  // Nettoyage des watchers avant le démontage du composant
+  stopWatcher() // Si ce n'est pas déjà fait
+  anotherWatcher() // Arrêter le second watcher
+})
+
+function increment() {
+  count.value++
+}
+
+function restartWatching() {
+  // Redémarrer le watcher en créant un nouveau
+  if (!isWatching.value) {
+    const newStopWatcher = watch(count, (newValue) => {
+      console.log('Nouveau watcher: compteur changé à', newValue)
+    })
+    
+    // Remplacer la fonction d'arrêt
+    stopWatcher = newStopWatcher
+    isWatching.value = true
+  }
+}
+</script>
+
+<template>
+  <div>
+    <p>Compteur: {{ count }}</p>
+    <p>Surveillance active: {{ isWatching }}</p>
+    
+    <button @click="increment">Incrémenter</button>
+    <button @click="restartWatching" :disabled="isWatching">
+      Redémarrer la surveillance
+    </button>
+  </div>
+</template>
+```
+
+## watchEffect - Surveillance Automatique des Dépendances
+
+<Callout type="info">
+  `watchEffect` est une alternative plus concise à `watch` qui surveille automatiquement toutes les dépendances réactives utilisées dans sa fonction de callback.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive, watchEffect } from 'vue'
+
+const userId = ref(1)
+const user = reactive({
+  name: '',
+  email: ''
+})
+const loading = ref(false)
+
+// watchEffect surveille automatiquement toutes les dépendances réactives
+// utilisées à l'intérieur de sa fonction
+watchEffect(async () => {
+  // userId.value est automatiquement surveillé
+  const id = userId.value
+  
+  if (id <= 0) return
+  
+  loading.value = true
+  try {
+    const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
+    const data = await response.json()
+    
+    // Mise à jour des propriétés réactives
+    user.name = data.name
+    user.email = data.email
+  } catch (error) {
+    console.error('Erreur lors du chargement:', error)
+  } finally {
+    loading.value = false
+  }
+})
+
+function changeUser(id) {
+  userId.value = id
+}
+</script>
+
+<template>
+  <div>
+    <h2>Détails de l'utilisateur</h2>
+    
+    <div class="user-selector">
+      <button @click="changeUser(1)">Utilisateur 1</button>
+      <button @click="changeUser(2)">Utilisateur 2</button>
+      <button @click="changeUser(3)">Utilisateur 3</button>
+    </div>
+    
+    <div v-if="loading">Chargement...</div>
+    
+    <div v-else class="user-details">
+      <p><strong>ID:</strong> {{ userId }}</p>
+      <p><strong>Nom:</strong> {{ user.name }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+    </div>
+  </div>
+</template>
+```
+
+## watchPostEffect et watchSyncEffect
+
+<Callout type="info">
+  Vue fournit également des variantes de `watchEffect` avec différents timings d'exécution.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, watchEffect, watchPostEffect, watchSyncEffect } from 'vue'
+
+const count = ref(0)
+const element = ref(null)
+
+// Exécuté avant les mises à jour du DOM (par défaut)
+watchEffect(() => {
+  console.log('watchEffect - count:', count.value)
+  // Ne peut pas accéder aux changements DOM actualisés
+})
+
+// Exécuté après les mises à jour du DOM
+watchPostEffect(() => {
+  console.log('watchPostEffect - count:', count.value)
+  // Peut accéder aux changements DOM actualisés
+  if (element.value) {
+    console.log('Hauteur de l\'élément:', element.value.offsetHeight)
+  }
+})
+
+// Exécuté de manière synchrone
+watchSyncEffect(() => {
+  console.log('watchSyncEffect - count:', count.value)
+  // Attention: Peut causer plusieurs rendus en cascade si utilisé incorrectement
+})
+</script>
+
+<template>
+  <div>
+    <p ref="element">Compteur: {{ count }}</p>
+    <button @click="count++">Incrémenter</button>
+  </div>
+</template>
+```
+
+## Gestion des Erreurs dans les Watchers
+
+```vue showLineNumbers
+<script setup>
+import { ref, watch } from 'vue'
+
+const userData = ref('')
+const error = ref(null)
+
+// Watcher avec gestion d'erreurs
+watch(userData, async (newData) => {
+  if (!newData.trim()) return
+  
+  error.value = null
+  
+  try {
+    // Simulation d'une opération risquée
+    if (newData === 'error') {
+      throw new Error('Données invalides')
+    }
+    
+    // Traitement réussi
+    console.log('Données traitées avec succès:', newData)
+  } catch (err) {
+    // Gestion de l'erreur
+    console.error('Erreur dans le watcher:', err)
+    error.value = err.message
+  }
+})
+</script>
+
+<template>
+  <div>
+    <input v-model="userData" placeholder="Entrez des données...">
+    <p>Entrez 'error' pour simuler une erreur</p>
+    
+    <div v-if="error" class="error">
+      Erreur: {{ error }}
+    </div>
+  </div>
+</template>
+
+<style>
+.error {
+  color: red;
+  border: 1px solid red;
+  padding: 8px;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+</style>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un générateur de mots de passe avec watchers pour valider la force du mot de passe en temps réel.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive, computed, watch } from 'vue'
+
+// État du formulaire
+const passwordForm = reactive({
+  password: '',
+  length: 12,
+  includeNumbers: true,
+  includeSymbols: true,
+  includeUppercase: true
+})
+
+// État de validation
+const passwordStrength = ref(0)
+const strengthText = ref('')
+const strengthColor = ref('')
+const validationIssues = ref([])
+
+// Générer un mot de passe aléatoire
+function generatePassword() {
+  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz'
+  const numberChars = '0123456789'
+  const symbolChars = '!@#$%^&*()_+[]{}|;:,.<>?'
+  
+  let chars = lowercaseChars
+  if (passwordForm.includeUppercase) chars += uppercaseChars
+  if (passwordForm.includeNumbers) chars += numberChars
+  if (passwordForm.includeSymbols) chars += symbolChars
+  
+  let password = ''
+  for (let i = 0; i < passwordForm.length; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length)
+    password += chars[randomIndex]
+  }
+  
+  passwordForm.password = password
+}
+
+// Surveiller les changements de mot de passe pour l'évaluation
+watch(() => passwordForm.password, (newPassword) => {
+  // Réinitialiser les problèmes de validation
+  validationIssues.value = []
+  
+  // Vérifier la longueur
+  if (newPassword.length < 8) {
+    validationIssues.value.push('Le mot de passe doit contenir au moins 8 caractères')
+  }
+  
+  // Vérifier la présence de chiffres
+  if (!/\d/.test(newPassword)) {
+    validationIssues.value.push('Le mot de passe doit contenir au moins un chiffre')
+  }
+  
+  // Vérifier la présence de lettres majuscules
+  if (!/[A-Z]/.test(newPassword)) {
+    validationIssues.value.push('Le mot de passe doit contenir au moins une lettre majuscule')
+  }
+  
+  // Vérifier la présence de symboles
+  if (!/[^A-Za-z0-9]/.test(newPassword)) {
+    validationIssues.value.push('Le mot de passe doit contenir au moins un symbole')
+  }
+  
+  // Calculer la force du mot de passe
+  calculatePasswordStrength(newPassword)
+})
+
+// Surveiller les options pour générer automatiquement un nouveau mot de passe
+watch(
+  [
+    () => passwordForm.length,
+    () => passwordForm.includeNumbers,
+    () => passwordForm.includeSymbols,
+    () => passwordForm.includeUppercase
+  ],
+  () => {
+    generatePassword()
+  }
+)
+
+// Calculer la force du mot de passe
+function calculatePasswordStrength(password) {
+  if (!password) {
+    passwordStrength.value = 0
+    strengthText.value = ''
+    strengthColor.value = ''
+    return
+  }
+  
+  let strength = 0
+  
+  // Longueur
+  strength += Math.min(6, Math.floor(password.length / 3))
+  
+  // Complexité
+  if (/[A-Z]/.test(password)) strength += 1
+  if (/[a-z]/.test(password)) strength += 1
+  if (/\d/.test(password)) strength += 1
+  if (/[^A-Za-z0-9]/.test(password)) strength += 1
+  
+  // Variété de caractères
+  const uniqueChars = new Set(password.split('')).size
+  strength += Math.min(2, Math.floor(uniqueChars / 4))
+  
+  // Score final (max 10)
+  passwordStrength.value = Math.min(10, strength)
+  
+  // Texte et couleur basés sur la force
+  if (passwordStrength.value <= 3) {
+    strengthText.value = 'Faible'
+    strengthColor.value = '#ff4d4d'
+  } else if (passwordStrength.value <= 6) {
+    strengthText.value = 'Moyen'
+    strengthColor.value = '#ffaa00'
+  } else if (passwordStrength.value <= 8) {
+    strengthText.value = 'Fort'
+    strengthColor.value = '#00cc00'
+  } else {
+    strengthText.value = 'Très fort'
+    strengthColor.value = '#00aa00'
+  }
+}
+
+// Générer un mot de passe initial
+generatePassword()
+</script>
+
+<template>
+  <div class="password-generator">
+    <h2>Générateur de Mot de Passe</h2>
+    
+    <div class="password-display">
+      <input 
+        type="text" 
+        v-model="passwordForm.password"
+        readonly
+      >
+      <button @click="generatePassword">Générer</button>
+    </div>
+    
+    <div class="strength-meter">
+      <div class="strength-label">
+        Force : 
+        <span :style="{ color: strengthColor }">{{ strengthText }}</span>
+      </div>
+      <div class="strength-bar">
+        <div 
+          class="strength-progress" 
+          :style="{ 
+            width: `${passwordStrength * 10}%`, 
+            backgroundColor: strengthColor 
+          }"
+        ></div>
+      </div>
+    </div>
+    
+    <div v-if="validationIssues.length > 0" class="validation-issues">
+      <ul>
+        <li v-for="(issue, index) in validationIssues" :key="index">
+          {{ issue }}
+        </li>
+      </ul>
+    </div>
+    
+    <div class="options">
+      <div class="option">
+        <label>Longueur: {{ passwordForm.length }}</label>
+        <input 
+          type="range" 
+          v-model.number="passwordForm.length" 
+          min="6" 
+          max="30"
+        >
+      </div>
+      
+      <div class="option">
+        <label>
+          <input 
+            type="checkbox" 
+            v-model="passwordForm.includeUppercase"
+          >
+          Inclure des majuscules (A-Z)
+        </label>
+      </div>
+      
+      <div class="option">
+        <label>
+          <input 
+            type="checkbox" 
+            v-model="passwordForm.includeNumbers"
+          >
+          Inclure des chiffres (0-9)
+        </label>
+      </div>
+      
+      <div class="option">
+        <label>
+          <input 
+            type="checkbox" 
+            v-model="passwordForm.includeSymbols"
+          >
+          Inclure des symboles (!@#$%^&*)
+        </label>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.password-generator {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.password-display {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.password-display input {
+  flex: 1;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+}
+
+.password-display button {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+.strength-meter {
+  margin-bottom: 20px;
+}
+
+.strength-label {
+  margin-bottom: 5px;
+}
+
+.strength-bar {
+  height: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.strength-progress {
+  height: 100%;
+  transition: width 0.3s, background-color 0.3s;
+}
+
+.validation-issues {
+  background-color: #fff8f8;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+}
+
+.validation-issues ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.validation-issues li {
+  color: #cc0000;
+}
+
+.options {
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.option {
+  margin-bottom: 10px;
+}
+
+.option label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.option input[type="range"] {
+  width: 100%;
+  margin-top: 5px;
+}
+</style>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Garder les Watchers Simples" icon="⚡">
+    Évitez la logique trop complexe dans un seul watcher
+  </Card>
+  <Card title="Éviter les Boucles Infinies" icon="🔄">
+    Attention à ne pas modifier une propriété observée dans son propre watcher
+  </Card>
+  <Card title="Préférer Computed Quand Possible" icon="🧮">
+    Pour de simples dérivations, utilisez des propriétés computed
+  </Card>
+  <Card title="Nettoyage Approprié" icon="🧹">
+    Arrêtez les watchers qui ne sont plus nécessaires
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Composants" href="composants" icon="🧩">
+    Découvrez comment créer et utiliser des composants réutilisables
+  </Card>
+  <Card title="Props" href="props" icon="🔄">
+    Apprenez à passer des données aux composants enfants
+  </Card>
+</Cards> 

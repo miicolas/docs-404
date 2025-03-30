@@ -1,0 +1,783 @@
+---
+title: Formulaires en Vue.js
+description: Apprenez à créer et gérer des formulaires interactifs avec Vue.js grâce à la directive v-model et aux techniques de validation.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Formulaires
+
+<Callout type="info">
+  Vue.js simplifie considérablement la gestion des formulaires grâce à la directive `v-model` qui permet une liaison bidirectionnelle entre les champs de formulaire et l'état de votre application.
+</Callout>
+
+## La Directive v-model
+
+<Steps>
+### Fonctionnement
+1. Lie la valeur d'un champ de formulaire à une variable réactive
+2. Met à jour la variable quand le champ change
+3. Met à jour le champ quand la variable change
+</Steps>
+
+## Types de Champs de Formulaire
+
+<Tabs items={['texte', 'checkbox', 'radio', 'select', 'multiple']}>
+  <Tab label="Champs texte" value="texte">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const username = ref('')
+    const message = ref('Bonjour Vue!')
+    </script>
+    
+    <template>
+      <div>
+        <label for="username">Nom d'utilisateur:</label>
+        <input id="username" v-model="username" type="text" />
+        <p>Nom saisi: {{ username }}</p>
+      </div>
+      
+      <div>
+        <label for="message">Message:</label>
+        <textarea id="message" v-model="message"></textarea>
+        <p>Message: {{ message }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Cases à cocher" value="checkbox">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const checked = ref(false)
+    const hobbies = ref([])
+    </script>
+    
+    <template>
+      <!-- Case à cocher unique (booléen) -->
+      <div>
+        <input id="subscribe" type="checkbox" v-model="checked" />
+        <label for="subscribe">S'abonner à la newsletter</label>
+        <p>Statut: {{ checked ? 'Abonné' : 'Non abonné' }}</p>
+      </div>
+      
+      <!-- Cases à cocher multiples (tableau) -->
+      <div>
+        <h4>Vos loisirs:</h4>
+        <div>
+          <input id="sports" type="checkbox" value="sports" v-model="hobbies" />
+          <label for="sports">Sports</label>
+        </div>
+        <div>
+          <input id="reading" type="checkbox" value="lecture" v-model="hobbies" />
+          <label for="reading">Lecture</label>
+        </div>
+        <div>
+          <input id="coding" type="checkbox" value="programmation" v-model="hobbies" />
+          <label for="coding">Programmation</label>
+        </div>
+        <p>Loisirs sélectionnés: {{ hobbies.join(', ') }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Boutons radio" value="radio">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const selectedOption = ref('option1')
+    </script>
+    
+    <template>
+      <div>
+        <h4>Choisissez une option:</h4>
+        <div>
+          <input id="option1" type="radio" value="option1" v-model="selectedOption" />
+          <label for="option1">Option 1</label>
+        </div>
+        <div>
+          <input id="option2" type="radio" value="option2" v-model="selectedOption" />
+          <label for="option2">Option 2</label>
+        </div>
+        <div>
+          <input id="option3" type="radio" value="option3" v-model="selectedOption" />
+          <label for="option3">Option 3</label>
+        </div>
+        <p>Option sélectionnée: {{ selectedOption }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Sélection simple" value="select">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const selectedCountry = ref('')
+    </script>
+    
+    <template>
+      <div>
+        <label for="country">Pays:</label>
+        <select id="country" v-model="selectedCountry">
+          <option value="">Sélectionnez un pays</option>
+          <option value="fr">France</option>
+          <option value="ca">Canada</option>
+          <option value="be">Belgique</option>
+          <option value="ch">Suisse</option>
+        </select>
+        <p>Pays sélectionné: {{ selectedCountry || 'Aucun' }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Sélection multiple" value="multiple">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const selectedTechnologies = ref([])
+    </script>
+    
+    <template>
+      <div>
+        <label for="technologies">Technologies (maintenez Ctrl/Cmd pour sélection multiple):</label>
+        <select id="technologies" v-model="selectedTechnologies" multiple>
+          <option value="vue">Vue.js</option>
+          <option value="react">React</option>
+          <option value="angular">Angular</option>
+          <option value="svelte">Svelte</option>
+        </select>
+        <p>Technologies sélectionnées: {{ selectedTechnologies.join(', ') || 'Aucune' }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+</Tabs>
+
+## Modificateurs de v-model
+
+<Callout type="info">
+  Vue.js fournit plusieurs modificateurs qui permettent de personnaliser le comportement de v-model.
+</Callout>
+
+<Cards>
+  <Card title=".lazy" icon="🐌">
+    Met à jour les données après l'événement `change` plutôt qu'à chaque saisie
+  </Card>
+  <Card title=".number" icon="🔢">
+    Convertit automatiquement la valeur en nombre 
+  </Card>
+  <Card title=".trim" icon="✂️">
+    Supprime les espaces au début et à la fin de la valeur
+  </Card>
+</Cards>
+
+```vue showLineNumbers
+<template>
+  <!-- Met à jour après avoir quitté le champ -->
+  <input v-model.lazy="message" />
+  
+  <!-- Convertit en nombre -->
+  <input v-model.number="age" type="number" />
+  
+  <!-- Supprime les espaces inutiles -->
+  <input v-model.trim="username" />
+</template>
+```
+
+## Validation de Formulaires
+
+<Steps>
+### Approches de validation
+1. **Validation côté client** - Pour le feedback immédiat à l'utilisateur
+2. **Validation côté serveur** - Pour la sécurité et l'intégrité des données
+3. **Bibliothèques de validation** - Pour simplifier la validation complexe
+</Steps>
+
+### Validation manuelle
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive, computed } from 'vue'
+
+const formData = reactive({
+  email: '',
+  password: '',
+  confirmPassword: ''
+})
+
+const errors = reactive({
+  email: '',
+  password: '',
+  confirmPassword: ''
+})
+
+const isFormValid = computed(() => {
+  return !errors.email && !errors.password && !errors.confirmPassword && 
+         formData.email && formData.password && formData.confirmPassword
+})
+
+function validateEmail() {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  
+  if (!formData.email) {
+    errors.email = 'L\'email est requis'
+  } else if (!emailRegex.test(formData.email)) {
+    errors.email = 'Format d\'email invalide'
+  } else {
+    errors.email = ''
+  }
+}
+
+function validatePassword() {
+  if (!formData.password) {
+    errors.password = 'Le mot de passe est requis'
+  } else if (formData.password.length < 8) {
+    errors.password = 'Le mot de passe doit contenir au moins 8 caractères'
+  } else {
+    errors.password = ''
+  }
+}
+
+function validateConfirmPassword() {
+  if (!formData.confirmPassword) {
+    errors.confirmPassword = 'Veuillez confirmer votre mot de passe'
+  } else if (formData.confirmPassword !== formData.password) {
+    errors.confirmPassword = 'Les mots de passe ne correspondent pas'
+  } else {
+    errors.confirmPassword = ''
+  }
+}
+
+function submitForm() {
+  validateEmail()
+  validatePassword()
+  validateConfirmPassword()
+  
+  if (isFormValid.value) {
+    alert('Formulaire soumis avec succès!')
+    // Envoi des données au serveur...
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="submitForm">
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input 
+        id="email" 
+        type="email"
+        v-model.trim="formData.email"
+        @blur="validateEmail"
+      />
+      <span v-if="errors.email" class="error">{{ errors.email }}</span>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Mot de passe:</label>
+      <input 
+        id="password" 
+        type="password"
+        v-model="formData.password"
+        @blur="validatePassword"
+      />
+      <span v-if="errors.password" class="error">{{ errors.password }}</span>
+    </div>
+    
+    <div class="form-group">
+      <label for="confirmPassword">Confirmer le mot de passe:</label>
+      <input 
+        id="confirmPassword" 
+        type="password"
+        v-model="formData.confirmPassword"
+        @blur="validateConfirmPassword"
+      />
+      <span v-if="errors.confirmPassword" class="error">{{ errors.confirmPassword }}</span>
+    </div>
+    
+    <button type="submit" :disabled="!isFormValid">S'inscrire</button>
+  </form>
+</template>
+
+<style>
+.form-group {
+  margin-bottom: 15px;
+}
+
+.error {
+  color: red;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 5px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>
+```
+
+## Bibliothèques de Validation
+
+<Callout type="info">
+  Pour les formulaires complexes, des bibliothèques comme VeeValidate ou Vuelidate peuvent simplifier grandement le processus de validation.
+</Callout>
+
+```vue showLineNumbers
+<!-- Exemple avec VeeValidate -->
+<script setup>
+import { useField, useForm } from 'vee-validate'
+import * as yup from 'yup'
+
+const schema = yup.object({
+  email: yup.string().required('Email requis').email('Email invalide'),
+  password: yup.string().required('Mot de passe requis').min(8, 'Minimum 8 caractères')
+})
+
+const { handleSubmit, errors } = useForm({
+  validationSchema: schema
+})
+
+const { value: email } = useField('email')
+const { value: password } = useField('password')
+
+const onSubmit = handleSubmit((values) => {
+  alert('Formulaire valide: ' + JSON.stringify(values))
+})
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <div>
+      <label for="email">Email</label>
+      <input id="email" v-model="email" />
+      <span v-if="errors.email">{{ errors.email }}</span>
+    </div>
+    
+    <div>
+      <label for="password">Mot de passe</label>
+      <input id="password" type="password" v-model="password" />
+      <span v-if="errors.password">{{ errors.password }}</span>
+    </div>
+    
+    <button type="submit">Soumettre</button>
+  </form>
+</template>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un formulaire d'inscription complet avec différents types de champs et validation.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive, computed } from 'vue'
+
+const formData = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  birthdate: '',
+  gender: '',
+  interests: [],
+  terms: false,
+  notifications: 'email'
+})
+
+const errors = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  birthdate: '',
+  gender: '',
+  terms: ''
+})
+
+const isSubmitted = ref(false)
+
+// Validation des champs
+function validateField(field) {
+  switch (field) {
+    case 'firstName':
+    case 'lastName':
+      errors[field] = !formData[field] ? `Le ${field === 'firstName' ? 'prénom' : 'nom'} est requis` : ''
+      break
+    case 'email':
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!formData.email) {
+        errors.email = 'L\'email est requis'
+      } else if (!emailRegex.test(formData.email)) {
+        errors.email = 'Format d\'email invalide'
+      } else {
+        errors.email = ''
+      }
+      break
+    case 'birthdate':
+      if (!formData.birthdate) {
+        errors.birthdate = 'La date de naissance est requise'
+      } else {
+        const age = calculateAge(formData.birthdate)
+        errors.birthdate = age < 18 ? 'Vous devez avoir au moins 18 ans' : ''
+      }
+      break
+    case 'gender':
+      errors.gender = !formData.gender ? 'Veuillez sélectionner votre genre' : ''
+      break
+    case 'terms':
+      errors.terms = !formData.terms ? 'Vous devez accepter les conditions' : ''
+      break
+  }
+}
+
+function calculateAge(birthdate) {
+  const birth = new Date(birthdate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  
+  return age
+}
+
+const isFormValid = computed(() => {
+  return !Object.values(errors).some(error => error) &&
+         formData.firstName &&
+         formData.lastName &&
+         formData.email &&
+         formData.birthdate &&
+         formData.gender &&
+         formData.terms
+})
+
+function validateAll() {
+  validateField('firstName')
+  validateField('lastName')
+  validateField('email')
+  validateField('birthdate')
+  validateField('gender')
+  validateField('terms')
+}
+
+function handleSubmit() {
+  validateAll()
+  
+  if (isFormValid.value) {
+    isSubmitted.value = true
+    console.log('Données soumises:', formData)
+    // Envoi au serveur...
+  }
+}
+
+function resetForm() {
+  Object.keys(formData).forEach(key => {
+    if (key === 'interests') formData[key] = []
+    else if (key === 'terms') formData[key] = false
+    else if (key === 'notifications') formData[key] = 'email'
+    else formData[key] = ''
+  })
+  
+  Object.keys(errors).forEach(key => {
+    errors[key] = ''
+  })
+  
+  isSubmitted.value = false
+}
+</script>
+
+<template>
+  <div class="registration-form">
+    <div v-if="isSubmitted" class="success-message">
+      <h2>Inscription réussie!</h2>
+      <p>Merci de vous être inscrit, {{ formData.firstName }}.</p>
+      <button @click="resetForm">Nouvelle inscription</button>
+    </div>
+    
+    <form v-else @submit.prevent="handleSubmit">
+      <h2>Formulaire d'inscription</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">Prénom*</label>
+          <input 
+            id="firstName" 
+            v-model.trim="formData.firstName"
+            @blur="validateField('firstName')"
+            type="text"
+          />
+          <span v-if="errors.firstName" class="error">{{ errors.firstName }}</span>
+        </div>
+        
+        <div class="form-group">
+          <label for="lastName">Nom*</label>
+          <input 
+            id="lastName" 
+            v-model.trim="formData.lastName"
+            @blur="validateField('lastName')"
+            type="text"
+          />
+          <span v-if="errors.lastName" class="error">{{ errors.lastName }}</span>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email*</label>
+        <input 
+          id="email" 
+          v-model.trim="formData.email"
+          @blur="validateField('email')"
+          type="email"
+        />
+        <span v-if="errors.email" class="error">{{ errors.email }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="birthdate">Date de naissance*</label>
+        <input 
+          id="birthdate" 
+          v-model="formData.birthdate"
+          @blur="validateField('birthdate')"
+          type="date"
+        />
+        <span v-if="errors.birthdate" class="error">{{ errors.birthdate }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label>Genre*</label>
+        <div class="radio-group">
+          <div>
+            <input 
+              id="male" 
+              v-model="formData.gender"
+              @change="validateField('gender')"
+              type="radio" 
+              value="male"
+            />
+            <label for="male">Homme</label>
+          </div>
+          <div>
+            <input 
+              id="female" 
+              v-model="formData.gender"
+              @change="validateField('gender')"
+              type="radio" 
+              value="female"
+            />
+            <label for="female">Femme</label>
+          </div>
+          <div>
+            <input 
+              id="other" 
+              v-model="formData.gender"
+              @change="validateField('gender')"
+              type="radio" 
+              value="other"
+            />
+            <label for="other">Autre</label>
+          </div>
+        </div>
+        <span v-if="errors.gender" class="error">{{ errors.gender }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label>Centres d'intérêt</label>
+        <div class="checkbox-group">
+          <div>
+            <input id="tech" type="checkbox" value="tech" v-model="formData.interests" />
+            <label for="tech">Technologie</label>
+          </div>
+          <div>
+            <input id="sports" type="checkbox" value="sports" v-model="formData.interests" />
+            <label for="sports">Sports</label>
+          </div>
+          <div>
+            <input id="arts" type="checkbox" value="arts" v-model="formData.interests" />
+            <label for="arts">Arts</label>
+          </div>
+          <div>
+            <input id="travel" type="checkbox" value="travel" v-model="formData.interests" />
+            <label for="travel">Voyages</label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Préférence de notification</label>
+        <select v-model="formData.notifications">
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+          <option value="push">Notifications push</option>
+          <option value="none">Aucune notification</option>
+        </select>
+      </div>
+      
+      <div class="form-group terms-group">
+        <div>
+          <input 
+            id="terms" 
+            type="checkbox" 
+            v-model="formData.terms"
+            @change="validateField('terms')"
+          />
+          <label for="terms">J'accepte les conditions d'utilisation*</label>
+        </div>
+        <span v-if="errors.terms" class="error">{{ errors.terms }}</span>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" :disabled="!isFormValid">S'inscrire</button>
+        <button type="button" @click="resetForm">Réinitialiser</button>
+      </div>
+      
+      <p class="required-fields">* Champs obligatoires</p>
+    </form>
+  </div>
+</template>
+
+<style>
+.registration-form {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.radio-group div,
+.checkbox-group div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.terms-group {
+  margin-top: 20px;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="button"] {
+  background-color: #6c757d;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.required-fields {
+  font-size: 0.8rem;
+  margin-top: 15px;
+  color: #6c757d;
+}
+
+.success-message {
+  text-align: center;
+  padding: 20px;
+}
+
+.success-message h2 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+}
+</style>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Validation Immédiate" icon="⚡">
+    Validez les champs lors de la saisie ou du blur pour un retour immédiat
+  </Card>
+  <Card title="Messages d'Erreur Clairs" icon="🔍">
+    Fournissez des messages d'erreur précis et constructifs
+  </Card>
+  <Card title="État de Soumission" icon="📤">
+    Désactivez le bouton de soumission si le formulaire est invalide
+  </Card>
+  <Card title="Accessibilité" icon="♿">
+    Associez les labels aux champs avec l'attribut `for` et utilisez des attributs ARIA
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Rendu Conditionnel" href="rendu-conditionnel" icon="🔀">
+    Apprenez à afficher conditionnellement des éléments
+  </Card>
+  <Card title="Rendu de Listes" href="rendu-listes" icon="📋">
+    Découvrez comment rendre des listes dynamiques
+  </Card>
+</Cards> 

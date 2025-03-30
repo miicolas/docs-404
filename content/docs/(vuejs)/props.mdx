@@ -1,0 +1,946 @@
+---
+title: Les Props en Vue.js
+description: Apprenez à transmettre des données aux composants enfants et à configurer correctement les props pour une communication efficace entre composants.
+---
+
+import { Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Props
+
+<Callout type="info">
+  Les props sont le mécanisme principal pour transmettre des données d'un composant parent à un composant enfant dans Vue.js. Elles permettent de créer des composants réutilisables et configurables.
+</Callout>
+
+## Déclarer et Utiliser les Props
+
+### Syntaxe de Base
+
+<Tabs items={['Composition API', 'Options API']}>
+  <Tab value="Composition API">
+  ```vue showLineNumbers
+  <script setup>
+  // Déclaration simple
+  const props = defineProps(['title', 'message', 'count'])
+  
+  console.log(props.title)    // Accès à une prop
+  </script>
+
+  <template>
+    <div>
+      <h2>{{ title }}</h2>
+      <p>{{ message }}</p>
+      <span>Compte: {{ count }}</span>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Options API">
+  ```vue showLineNumbers
+  <script>
+  export default {
+    // Déclaration simple
+    props: ['title', 'message', 'count'],
+    
+    mounted() {
+      console.log(this.title)   // Accès à une prop
+    }
+  }
+  </script>
+
+  <template>
+    <div>
+      <h2>{{ title }}</h2>
+      <p>{{ message }}</p>
+      <span>Compte: {{ count }}</span>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Utilisation dans le Composant Parent
+
+```vue showLineNumbers
+<script setup>
+import ChildComponent from './ChildComponent.vue'
+</script>
+
+<template>
+  <div>
+    <h1>Composant Parent</h1>
+    
+    <!-- Passage de props à l'enfant -->
+    <ChildComponent 
+      title="Titre du Composant" 
+      message="Voici un message important" 
+      :count="42"
+    />
+  </div>
+</template>
+```
+
+## Validation des Props
+
+<Callout type="warning">
+  La validation des props est une bonne pratique qui améliore la robustesse et la maintenabilité de vos composants.
+</Callout>
+
+### Types et Validation Simple
+
+<Tabs items={['Composition API', 'Options API']}>
+  <Tab value="Composition API">
+  ```vue showLineNumbers
+  <script setup>
+  // Validation avec types
+  const props = defineProps({
+    // Type unique
+    title: String,
+    
+    // Types multiples
+    id: [String, Number],
+    
+    // Objet de configuration complet
+    user: {
+      type: Object,
+      required: true
+    },
+    
+    // Avec valeur par défaut
+    count: {
+      type: Number,
+      default: 0
+    },
+    
+    // Avec validation personnalisée
+    email: {
+      type: String,
+      validator(value) {
+        return value.includes('@')
+      }
+    }
+  })
+  </script>
+  ```
+  </Tab>
+  <Tab value="Options API">
+  ```vue showLineNumbers
+  <script>
+  export default {
+    // Validation avec types
+    props: {
+      // Type unique
+      title: String,
+      
+      // Types multiples
+      id: [String, Number],
+      
+      // Objet de configuration complet
+      user: {
+        type: Object,
+        required: true
+      },
+      
+      // Avec valeur par défaut
+      count: {
+        type: Number,
+        default: 0
+      },
+      
+      // Avec validation personnalisée
+      email: {
+        type: String,
+        validator(value) {
+          return value.includes('@')
+        }
+      }
+    }
+  }
+  </script>
+  ```
+  </Tab>
+</Tabs>
+
+### Types Supportés
+
+```js showLineNumbers
+// Types natifs JavaScript
+String
+Number
+Boolean
+Array
+Object
+Date
+Function
+Symbol
+
+// Types personnalisés (classes)
+class Person {
+  constructor(name) {
+    this.name = name
+  }
+}
+
+defineProps({
+  author: Person
+})
+```
+
+### Valeurs par Défaut
+
+<Tabs items={['Types primitifs', 'Objets et tableaux']}>
+  <Tab value="Types primitifs">
+  ```js showLineNumbers
+  defineProps({
+    // Valeurs par défaut pour types primitifs
+    title: {
+      type: String,
+      default: 'Titre par défaut'
+    },
+    count: {
+      type: Number,
+      default: 0
+    },
+    isActive: {
+      type: Boolean,
+      default: false
+    }
+  })
+  ```
+  </Tab>
+  <Tab value="Objets et tableaux">
+  ```js showLineNumbers
+  defineProps({
+    // Pour les objets et tableaux, utilisez une fonction factory
+    settings: {
+      type: Object,
+      default() {
+        return { theme: 'light', notifications: true }
+      }
+    },
+    tags: {
+      type: Array,
+      default() {
+        return ['général', 'important']
+      }
+    }
+  })
+  ```
+  </Tab>
+</Tabs>
+
+## Cas d'Utilisation Avancés
+
+### Props Booléennes
+
+```vue showLineNumbers
+<script setup>
+defineProps({
+  disabled: Boolean,
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  required: Boolean
+})
+</script>
+
+<template>
+  <div>
+    <!-- Les props booléennes peuvent être simplifiées -->
+    <button :disabled="disabled" :class="{ loading }">
+      Soumettre
+    </button>
+    
+    <!-- Ces formes sont équivalentes -->
+    <input required />              <!-- valeur: true -->
+    <input :required="true" />      <!-- valeur: true -->
+    <input :required="false" />     <!-- valeur: false -->
+    <input v-bind:required />       <!-- valeur: true -->
+  </div>
+</template>
+```
+
+### Props vs Attrs
+
+<Callout type="info">
+  Vue fait une distinction entre les props (déclarées) et les attributs (non déclarés).
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+// Seule "title" est une prop
+const props = defineProps({
+  title: String
+})
+
+// Accès aux attributs non déclarés comme props
+// comme data-*, aria-*, etc.
+const attrs = useAttrs()
+</script>
+
+<template>
+  <div>
+    <h1>{{ title }}</h1>
+    <!-- attrs contient tous les attributs non-props -->
+    <pre>{{ attrs }}</pre>
+  </div>
+</template>
+```
+
+### Props en Lecture Seule
+
+<Callout type="warning">
+  Les props sont en lecture seule ! Ne modifiez jamais directement une prop dans un composant enfant.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+const props = defineProps({
+  count: {
+    type: Number,
+    default: 0
+  }
+})
+
+// ❌ NE FAITES PAS CECI
+function increment() {
+  props.count++ // Erreur: Les props sont en lecture seule
+}
+
+// ✅ FAITES PLUTÔT CECI
+const emit = defineEmits(['update:count'])
+
+function increment() {
+  emit('update:count', props.count + 1)
+}
+</script>
+```
+
+## Modelisation Bidirectionnelle (v-model)
+
+<Callout type="info">
+  `v-model` permet de créer une liaison bidirectionnelle entre un parent et un enfant, basée sur les props et les événements.
+</Callout>
+
+### v-model sur un Composant Personnalisé
+
+<Tabs items={['Parent', 'Enfant']}>
+  <Tab value="Parent">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref } from 'vue'
+  import CustomInput from './CustomInput.vue'
+  
+  const username = ref('')
+  </script>
+  
+  <template>
+    <div>
+      <!-- v-model => :modelValue + @update:modelValue -->
+      <CustomInput v-model="username" />
+      <p>Nom d'utilisateur: {{ username }}</p>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Enfant">
+  ```vue showLineNumbers
+  <script setup>
+  defineProps({
+    modelValue: {
+      type: String,
+      required: true
+    }
+  })
+  
+  defineEmits(['update:modelValue'])
+  </script>
+  
+  <template>
+    <input
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
+      class="custom-input"
+    />
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Plusieurs v-model
+
+<Tabs items={['Parent', 'Enfant']}>
+  <Tab value="Parent">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref } from 'vue'
+  import UserForm from './UserForm.vue'
+  
+  const firstName = ref('')
+  const lastName = ref('')
+  </script>
+  
+  <template>
+    <div>
+      <UserForm
+        v-model:firstName="firstName"
+        v-model:lastName="lastName"
+      />
+      
+      <p>Nom complet: {{ firstName }} {{ lastName }}</p>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Enfant">
+  ```vue showLineNumbers
+  <script setup>
+  defineProps({
+    firstName: String,
+    lastName: String
+  })
+  
+  defineEmits(['update:firstName', 'update:lastName'])
+  </script>
+  
+  <template>
+    <div>
+      <div>
+        <label>Prénom:</label>
+        <input
+          :value="firstName"
+          @input="$emit('update:firstName', $event.target.value)"
+        />
+      </div>
+      
+      <div>
+        <label>Nom:</label>
+        <input
+          :value="lastName"
+          @input="$emit('update:lastName', $event.target.value)"
+        />
+      </div>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+## Cas Pratiques
+
+### Composant Carte Utilisateur
+
+```vue showLineNumbers
+<!-- UserCard.vue -->
+<script setup>
+defineProps({
+  // Données de l'utilisateur
+  user: {
+    type: Object,
+    required: true,
+    validator(user) {
+      return ['id', 'name'].every(prop => prop in user)
+    }
+  },
+  
+  // Apparence
+  theme: {
+    type: String,
+    default: 'light',
+    validator(value) {
+      return ['light', 'dark', 'colorful'].includes(value)
+    }
+  },
+  bordered: {
+    type: Boolean,
+    default: true
+  },
+  
+  // Comportement
+  selectable: Boolean,
+  selected: Boolean
+})
+
+const emit = defineEmits(['select', 'view-details'])
+
+function handleSelect() {
+  if (props.selectable) {
+    emit('select', props.user.id)
+  }
+}
+
+function viewDetails() {
+  emit('view-details', props.user)
+}
+</script>
+
+<template>
+  <div 
+    class="user-card" 
+    :class="[
+      `theme-${theme}`, 
+      { 
+        bordered, 
+        selectable, 
+        selected 
+      }
+    ]"
+    @click="handleSelect"
+  >
+    <img 
+      v-if="user.avatar" 
+      :src="user.avatar" 
+      :alt="user.name"
+      class="avatar"
+    />
+    <div v-else class="avatar placeholder">
+      {{ user.name.charAt(0) }}
+    </div>
+    
+    <div class="user-info">
+      <h3>{{ user.name }}</h3>
+      <p v-if="user.title">{{ user.title }}</p>
+    </div>
+    
+    <button @click.stop="viewDetails" class="details-btn">
+      Détails
+    </button>
+  </div>
+</template>
+
+<style scoped>
+.user-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  transition: all 0.2s;
+}
+
+.user-card.bordered {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.theme-light { background-color: #fff; color: #333; }
+.theme-dark { background-color: #333; color: #fff; }
+.theme-colorful { background-color: #f0f8ff; color: #1e88e5; }
+
+.selectable { cursor: pointer; }
+.selectable:hover { background-color: rgba(0,0,0,0.05); }
+.selected { background-color: rgba(0,123,255,0.1); }
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 1rem;
+  object-fit: cover;
+}
+
+.avatar.placeholder {
+  background-color: #6c757d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.details-btn {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.theme-dark .details-btn {
+  border-color: #555;
+  color: #fff;
+}
+</style>
+```
+
+### Utilisation du Composant Carte Utilisateur
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+import UserCard from './UserCard.vue'
+
+const users = ref([
+  { id: 1, name: 'Alice Dubois', title: 'Développeuse Frontend', avatar: '/avatars/alice.jpg' },
+  { id: 2, name: 'Bob Martin', title: 'Designer UX', avatar: '/avatars/bob.jpg' },
+  { id: 3, name: 'Caroline Lefèvre', title: 'Chef de Projet' },
+  { id: 4, name: 'David Bernard', title: 'Développeur Backend', avatar: '/avatars/david.jpg' }
+])
+
+const selectedUserId = ref(null)
+
+function selectUser(userId) {
+  selectedUserId.value = userId
+}
+
+function showUserDetails(user) {
+  alert(`Détails pour ${user.name}`)
+}
+</script>
+
+<template>
+  <div class="users-container">
+    <h2>Notre Équipe</h2>
+    
+    <div class="theme-switcher">
+      <label>Thème:</label>
+      <select v-model="currentTheme">
+        <option value="light">Clair</option>
+        <option value="dark">Sombre</option>
+        <option value="colorful">Coloré</option>
+      </select>
+    </div>
+    
+    <div class="users-grid">
+      <UserCard
+        v-for="user in users"
+        :key="user.id"
+        :user="user"
+        :theme="currentTheme"
+        selectable
+        :selected="selectedUserId === user.id"
+        @select="selectUser"
+        @view-details="showUserDetails"
+      />
+    </div>
+  </div>
+</template>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un composant `PriceDisplay` qui affichera un prix avec différentes options de mise en forme.
+</Callout>
+
+<Steps>
+  <Step title="Définissez les Props du Composant">
+    ```vue showLineNumbers
+    <!-- PriceDisplay.vue -->
+    <script setup>
+    const props = defineProps({
+      // Prix en valeur numérique
+      price: {
+        type: Number,
+        required: true,
+        validator(value) {
+          return value >= 0 // Doit être positif
+        }
+      },
+      
+      // Devise (EUR, USD, etc.)
+      currency: {
+        type: String,
+        default: 'EUR',
+        validator(value) {
+          return ['EUR', 'USD', 'GBP', 'JPY', 'CAD'].includes(value)
+        }
+      },
+      
+      // Afficher le symbole au lieu du code
+      useSymbol: {
+        type: Boolean,
+        default: true
+      },
+      
+      // Taille de l'affichage
+      size: {
+        type: String,
+        default: 'medium',
+        validator(value) {
+          return ['small', 'medium', 'large'].includes(value)
+        }
+      },
+      
+      // Mise en évidence pour les prix en promotion
+      highlighted: Boolean,
+      
+      // Afficher les décimales même si ce sont des zéros
+      showDecimals: {
+        type: Boolean,
+        default: true
+      },
+      
+      // Afficher la devise avant ou après le prix
+      currencyPosition: {
+        type: String,
+        default: 'before',
+        validator(value) {
+          return ['before', 'after'].includes(value)
+        }
+      }
+    })
+
+    // Conversion des codes de devise en symboles
+    const currencySymbols = {
+      EUR: '€',
+      USD: '$',
+      GBP: '£',
+      JPY: '¥',
+      CAD: 'C$'
+    }
+
+    // Obtenir le symbole ou le code selon useSymbol
+    function getCurrencyDisplay() {
+      return props.useSymbol 
+        ? currencySymbols[props.currency] 
+        : props.currency
+    }
+
+    // Formater le prix avec les décimales appropriées
+    function formatPrice() {
+      const options = { 
+        minimumFractionDigits: props.showDecimals ? 2 : 0, 
+        maximumFractionDigits: 2
+      }
+      
+      return props.price.toLocaleString(undefined, options)
+    }
+    </script>
+
+    <template>
+      <span 
+        class="price-display" 
+        :class="[
+          `size-${size}`, 
+          { highlighted }
+        ]"
+      >
+        <template v-if="currencyPosition === 'before'">
+          <span class="currency">{{ getCurrencyDisplay() }}</span>
+          <span class="value">{{ formatPrice() }}</span>
+        </template>
+        
+        <template v-else>
+          <span class="value">{{ formatPrice() }}</span>
+          <span class="currency">{{ getCurrencyDisplay() }}</span>
+        </template>
+      </span>
+    </template>
+
+    <style scoped>
+    .price-display {
+      display: inline-flex;
+      align-items: baseline;
+      font-family: sans-serif;
+    }
+
+    .size-small {
+      font-size: 0.9rem;
+    }
+
+    .size-medium {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .size-large {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .highlighted {
+      color: #e53935;
+    }
+
+    .currency {
+      margin: 0 2px;
+    }
+    </style>
+    ```
+  </Step>
+
+  <Step title="Utilisez le Composant">
+    ```vue showLineNumbers
+    <script setup>
+    import PriceDisplay from './PriceDisplay.vue'
+    import { ref } from 'vue'
+
+    // Prix de démonstration
+    const regularPrice = 29.99
+    const salePrice = 19.95
+    const freePrice = 0
+
+    // Options configurables
+    const currencyOptions = ref({
+      currency: 'EUR',
+      useSymbol: true,
+      currencyPosition: 'before'
+    })
+
+    const displayOptions = ref({
+      showDecimals: true,
+      size: 'medium'
+    })
+    </script>
+
+    <template>
+      <div class="product-pricing">
+        <h2>Démonstration du Composant PriceDisplay</h2>
+        
+        <div class="price-examples">
+          <div class="price-card">
+            <h3>Prix Normal</h3>
+            <PriceDisplay 
+              :price="regularPrice"
+              v-bind="currencyOptions"
+              v-bind="displayOptions"
+            />
+          </div>
+          
+          <div class="price-card">
+            <h3>Prix Promotionnel</h3>
+            <PriceDisplay 
+              :price="salePrice"
+              v-bind="currencyOptions"
+              v-bind="displayOptions"
+              highlighted
+              size="large"
+            />
+          </div>
+          
+          <div class="price-card">
+            <h3>Gratuit</h3>
+            <PriceDisplay 
+              :price="freePrice"
+              v-bind="currencyOptions"
+              v-bind="displayOptions"
+              size="small"
+            />
+          </div>
+        </div>
+        
+        <div class="options-panel">
+          <h3>Options</h3>
+          
+          <div class="option-group">
+            <label>Devise:</label>
+            <select v-model="currencyOptions.currency">
+              <option value="EUR">Euro (EUR)</option>
+              <option value="USD">Dollar américain (USD)</option>
+              <option value="GBP">Livre sterling (GBP)</option>
+              <option value="JPY">Yen japonais (JPY)</option>
+              <option value="CAD">Dollar canadien (CAD)</option>
+            </select>
+          </div>
+          
+          <div class="option-group">
+            <label>Utiliser symbole:</label>
+            <input type="checkbox" v-model="currencyOptions.useSymbol">
+          </div>
+          
+          <div class="option-group">
+            <label>Position de la devise:</label>
+            <select v-model="currencyOptions.currencyPosition">
+              <option value="before">Avant le prix</option>
+              <option value="after">Après le prix</option>
+            </select>
+          </div>
+          
+          <div class="option-group">
+            <label>Afficher les décimales:</label>
+            <input type="checkbox" v-model="displayOptions.showDecimals">
+          </div>
+          
+          <div class="option-group">
+            <label>Taille:</label>
+            <select v-model="displayOptions.size">
+              <option value="small">Petite</option>
+              <option value="medium">Moyenne</option>
+              <option value="large">Grande</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <style>
+    .product-pricing {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .price-examples {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .price-card {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .options-panel {
+      padding: 20px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+    }
+
+    .option-group {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .option-group label {
+      width: 150px;
+      margin-right: 10px;
+    }
+
+    select, input {
+      padding: 5px;
+    }
+    </style>
+    ```
+  </Step>
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Types et Validation" icon="✅">
+    Toujours spécifier les types et la validation pour chaque prop
+  </Card>
+  <Card title="Props Immuables" icon="🔒">
+    Ne jamais modifier directement les props dans le composant enfant
+  </Card>
+  <Card title="Nommage Explicite" icon="📝">
+    Nommez vos props de manière claire et descriptive
+  </Card>
+  <Card title="Valeurs par Défaut" icon="🔄">
+    Fournissez des valeurs par défaut lorsque cela est judicieux
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Événements" href="evenements" icon="📢">
+    Apprenez la communication enfant vers parent
+  </Card>
+  <Card title="Slots" href="slots" icon="🧩">
+    Maîtrisez la distribution de contenu
+  </Card>
+</Cards> 

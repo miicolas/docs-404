@@ -1,0 +1,1005 @@
+---
+title: Les Slots en Vue.js
+description: Apprenez à utiliser les slots pour distribuer du contenu dans vos composants et créer des structures flexibles et réutilisables.
+---
+
+import { Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Slots
+
+<Callout type="info">
+  Les slots sont un mécanisme de distribution de contenu qui permet d'insérer du contenu HTML dans les composants enfants. Ils rendent les composants beaucoup plus flexibles et réutilisables.
+</Callout>
+
+## Slot de Base
+
+### Définition d'un Slot
+
+```vue showLineNumbers
+<!-- BaseCard.vue -->
+<template>
+  <div class="card">
+    <div class="card-body">
+      <!-- Slot sans nom (slot par défaut) -->
+      <slot>
+        <!-- Contenu par défaut si rien n'est fourni -->
+        <p>Aucun contenu fourni</p>
+      </slot>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 1rem;
+}
+</style>
+```
+
+### Utilisation d'un Slot
+
+```vue showLineNumbers
+<script setup>
+import BaseCard from './BaseCard.vue'
+</script>
+
+<template>
+  <!-- Utilisation avec contenu -->
+  <BaseCard>
+    <h2>Titre de la carte</h2>
+    <p>Contenu personnalisé pour cette carte.</p>
+  </BaseCard>
+  
+  <!-- Utilisation sans contenu (affichera le contenu par défaut) -->
+  <BaseCard />
+</template>
+```
+
+## Slots Nommés
+
+<Callout type="info">
+  Les slots nommés permettent de distribuer plusieurs fragments de contenu à des emplacements spécifiques du composant enfant.
+</Callout>
+
+### Définition de Slots Nommés
+
+```vue showLineNumbers
+<!-- LayoutCard.vue -->
+<template>
+  <div class="card">
+    <div class="card-header">
+      <!-- Slot nommé "header" -->
+      <slot name="header">
+        <h3>En-tête par défaut</h3>
+      </slot>
+    </div>
+    
+    <div class="card-body">
+      <!-- Slot par défaut -->
+      <slot></slot>
+    </div>
+    
+    <div class="card-footer">
+      <!-- Slot nommé "footer" -->
+      <slot name="footer">
+        <p>Pied de page par défaut</p>
+      </slot>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.card-footer {
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+}
+</style>
+```
+
+### Utilisation de Slots Nommés
+
+```vue showLineNumbers
+<script setup>
+import LayoutCard from './LayoutCard.vue'
+</script>
+
+<template>
+  <LayoutCard>
+    <!-- Contenu pour le slot par défaut -->
+    <p>Ceci est le contenu principal.</p>
+    
+    <!-- Contenu pour le slot "header" -->
+    <template #header>
+      <h2>Mon Titre Personnalisé</h2>
+      <p>Sous-titre de la carte</p>
+    </template>
+    
+    <!-- Syntaxe alternative pour "footer" (v-slot:footer) -->
+    <template v-slot:footer>
+      <div class="custom-footer">
+        <button>Sauvegarder</button>
+        <button>Annuler</button>
+      </div>
+    </template>
+  </LayoutCard>
+</template>
+
+<style scoped>
+.custom-footer {
+  display: flex;
+  justify-content: space-between;
+}
+</style>
+```
+
+## Slots avec Portée (Scoped Slots)
+
+<Callout type="info">
+  Les slots avec portée permettent au composant enfant de passer des données au contenu fourni par le parent. Cela crée une relation de collaboration entre le parent et l'enfant.
+</Callout>
+
+### Définition d'un Slot avec Portée
+
+```vue showLineNumbers
+<!-- ItemList.vue -->
+<script setup>
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true
+  }
+})
+</script>
+
+<template>
+  <div class="item-list">
+    <ul>
+      <li v-for="(item, index) in items" :key="index">
+        <!-- Passe des données au slot -->
+        <slot 
+          :item="item" 
+          :index="index" 
+          :isEven="index % 2 === 0"
+        >
+          <!-- Rendu par défaut -->
+          {{ item }}
+        </slot>
+      </li>
+    </ul>
+  </div>
+</template>
+```
+
+### Utilisation d'un Slot avec Portée
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+import ItemList from './ItemList.vue'
+
+const fruits = ref(['Pomme', 'Banane', 'Orange', 'Fraise', 'Kiwi'])
+
+function removeItem(index) {
+  fruits.value.splice(index, 1)
+}
+</script>
+
+<template>
+  <div>
+    <h2>Liste de Fruits</h2>
+    
+    <ItemList :items="fruits">
+      <!-- Utilisation de la syntaxe de destructuration -->
+      <template #default="{ item, index, isEven }">
+        <div 
+          class="fruit-item" 
+          :class="{ 'even-row': isEven }"
+        >
+          <span>{{ index + 1 }}. {{ item }}</span>
+          <button @click="removeItem(index)">Supprimer</button>
+        </div>
+      </template>
+    </ItemList>
+  </div>
+</template>
+
+<style scoped>
+.fruit-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.even-row {
+  background-color: #f8f8f8;
+}
+
+button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+</style>
+```
+
+### Slots avec Portée Nommés
+
+```vue showLineNumbers
+<!-- UserProfile.vue -->
+<script setup>
+defineProps({
+  user: {
+    type: Object,
+    required: true
+  }
+})
+
+const userStatus = computed(() => {
+  return props.user.isActive ? 'Actif' : 'Inactif'
+})
+</script>
+
+<template>
+  <div class="user-profile">
+    <div class="profile-header">
+      <!-- Slot nommé avec portée -->
+      <slot name="header" :user="user" :status="userStatus">
+        <h2>{{ user.name }}</h2>
+        <span class="status">{{ userStatus }}</span>
+      </slot>
+    </div>
+    
+    <div class="profile-body">
+      <!-- Slot standard -->
+      <slot :user="user">
+        <p>Email: {{ user.email }}</p>
+        <p>Rôle: {{ user.role }}</p>
+      </slot>
+    </div>
+    
+    <div class="profile-footer">
+      <!-- Autre slot nommé avec portée -->
+      <slot name="actions" :user="user">
+        <button>Éditer</button>
+      </slot>
+    </div>
+  </div>
+</template>
+```
+
+```vue showLineNumbers
+<!-- Utilisation -->
+<UserProfile :user="currentUser">
+  <template #header="{ user, status }">
+    <div class="custom-header">
+      <h2>{{ user.name }} ({{ user.role }})</h2>
+      <span :class="['badge', status === 'Actif' ? 'active' : 'inactive']">
+        {{ status }}
+      </span>
+    </div>
+  </template>
+  
+  <template #default="{ user }">
+    <div class="custom-body">
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Téléphone:</strong> {{ user.phone }}</p>
+      <p><strong>Dernière connexion:</strong> {{ user.lastLogin }}</p>
+    </div>
+  </template>
+  
+  <template #actions="{ user }">
+    <div class="action-buttons">
+      <button class="edit">Éditer</button>
+      <button 
+        class="delete" 
+        v-if="user.role !== 'admin'"
+      >
+        Supprimer
+      </button>
+    </div>
+  </template>
+</UserProfile>
+```
+
+## Slots Dynamiques
+
+<Callout type="info">
+  Les noms de slots peuvent être dynamiques, ce qui permet de sélectionner le slot cible en fonction d'une valeur réactive.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import BaseLayout from './BaseLayout.vue'
+import { ref } from 'vue'
+
+const currentSlot = ref('main')
+
+function changeSlot(slotName) {
+  currentSlot.value = slotName
+}
+</script>
+
+<template>
+  <div>
+    <div class="slot-selector">
+      <button @click="changeSlot('header')">En-tête</button>
+      <button @click="changeSlot('main')">Principal</button>
+      <button @click="changeSlot('footer')">Pied de page</button>
+    </div>
+    
+    <BaseLayout>
+      <!-- Utilisation du nom de slot dynamique -->
+      <template v-slot:[currentSlot]>
+        Contenu pour le slot "{{ currentSlot }}"
+      </template>
+    </BaseLayout>
+  </div>
+</template>
+```
+
+## Personnalisation de Composants
+
+<Callout type="info">
+  Les slots sont parfaits pour créer des composants hautement personnalisables tout en maintenant leur comportement de base cohérent.
+</Callout>
+
+### Composant Modal Personnalisable
+
+```vue showLineNumbers
+<!-- BaseModal.vue -->
+<script setup>
+import { ref, watch } from 'vue'
+
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false
+  },
+  title: {
+    type: String,
+    default: 'Modal'
+  },
+  size: {
+    type: String,
+    default: 'medium',
+    validator(value) {
+      return ['small', 'medium', 'large', 'full'].includes(value)
+    }
+  }
+})
+
+const emit = defineEmits(['close'])
+
+function closeModal() {
+  emit('close')
+}
+
+// Empêcher le défilement du body quand la modal est ouverte
+watch(() => props.isOpen, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+})
+</script>
+
+<template>
+  <Teleport to="body">
+    <div 
+      v-if="isOpen" 
+      class="modal-overlay"
+      @click="closeModal"
+    >
+      <div 
+        class="modal-container" 
+        :class="`size-${size}`"
+        @click.stop
+      >
+        <div class="modal-header">
+          <!-- Slot pour l'en-tête -->
+          <slot name="header">
+            <h2>{{ title }}</h2>
+            <button class="close-btn" @click="closeModal">×</button>
+          </slot>
+        </div>
+        
+        <div class="modal-body">
+          <!-- Slot par défaut pour le contenu principal -->
+          <slot></slot>
+        </div>
+        
+        <div class="modal-footer">
+          <!-- Slot pour le pied de page -->
+          <slot name="footer">
+            <button @click="closeModal">Fermer</button>
+          </slot>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.size-small { width: 300px; }
+.size-medium { width: 500px; }
+.size-large { width: 800px; }
+.size-full { width: 90vw; }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-footer button {
+  padding: 8px 15px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
+```
+
+### Utilisation du Composant Modal
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+import BaseModal from './BaseModal.vue'
+
+const isModalOpen = ref(false)
+const selectedUser = ref(null)
+
+const users = [
+  { id: 1, name: 'Alice Dubois', email: 'alice@example.com' },
+  { id: 2, name: 'Bob Martin', email: 'bob@example.com' }
+]
+
+function openUserModal(user) {
+  selectedUser.value = user
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+}
+
+function saveUser() {
+  // Logique de sauvegarde
+  console.log('Sauvegarde de l\'utilisateur', selectedUser.value)
+  closeModal()
+}
+</script>
+
+<template>
+  <div>
+    <button 
+      v-for="user in users" 
+      :key="user.id"
+      @click="openUserModal(user)"
+    >
+      Voir {{ user.name }}
+    </button>
+    
+    <BaseModal 
+      :isOpen="isModalOpen" 
+      @close="closeModal"
+      title="Détails de l'utilisateur"
+      size="medium"
+    >
+      <!-- Personnalisation de l'en-tête -->
+      <template #header>
+        <div class="custom-header">
+          <h2 v-if="selectedUser">
+            {{ selectedUser.name }}
+          </h2>
+          <button @click="closeModal">Fermer</button>
+        </div>
+      </template>
+      
+      <!-- Contenu principal -->
+      <div v-if="selectedUser" class="user-details">
+        <p><strong>ID:</strong> {{ selectedUser.id }}</p>
+        <p><strong>Nom:</strong> {{ selectedUser.name }}</p>
+        <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+        
+        <div class="form-group">
+          <label>Nom:</label>
+          <input v-model="selectedUser.name" />
+        </div>
+        
+        <div class="form-group">
+          <label>Email:</label>
+          <input v-model="selectedUser.email" type="email" />
+        </div>
+      </div>
+      
+      <!-- Personnalisation du pied de page -->
+      <template #footer>
+        <div class="modal-actions">
+          <button class="cancel-btn" @click="closeModal">Annuler</button>
+          <button class="save-btn" @click="saveUser">Sauvegarder</button>
+        </div>
+      </template>
+    </BaseModal>
+  </div>
+</template>
+
+<style scoped>
+.custom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.user-details {
+  padding: 10px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background-color: #e0e0e0;
+}
+
+.save-btn {
+  background-color: #4caf50;
+  color: white;
+}
+</style>
+```
+
+## Exercice Pratique: DataTable Personnalisable
+
+<Callout type="info">
+  Créez un composant DataTable réutilisable qui utilise des slots pour personnaliser le rendu des colonnes et les actions.
+</Callout>
+
+<Steps>
+  <Step title="Créez le Composant DataTable de Base">
+    ```vue showLineNumbers
+    <!-- DataTable.vue -->
+    <script setup>
+    defineProps({
+      items: {
+        type: Array,
+        required: true
+      },
+      columns: {
+        type: Array,
+        required: true
+      }
+    })
+    </script>
+    
+    <template>
+      <div class="data-table-container">
+        <!-- Slot pour le titre -->
+        <div class="table-header">
+          <slot name="header">
+            <h3>Tableau de Données</h3>
+          </slot>
+        </div>
+        
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th v-for="column in columns" :key="column.key">
+                <!-- Slot pour l'en-tête de colonne -->
+                <slot 
+                  name="column-header" 
+                  :column="column"
+                >
+                  {{ column.label }}
+                </slot>
+              </th>
+              
+              <!-- Colonne d'actions si le slot est fourni -->
+              <th v-if="$slots['row-actions']">Actions</th>
+            </tr>
+          </thead>
+          
+          <tbody>
+            <tr v-for="(item, index) in items" :key="index">
+              <td v-for="column in columns" :key="column.key">
+                <!-- Slot pour le contenu de cellule -->
+                <slot 
+                  :name="`column-${column.key}`" 
+                  :item="item" 
+                  :value="item[column.key]" 
+                  :index="index"
+                >
+                  {{ item[column.key] }}
+                </slot>
+              </td>
+              
+              <!-- Cellule d'actions -->
+              <td v-if="$slots['row-actions']">
+                <slot 
+                  name="row-actions" 
+                  :item="item" 
+                  :index="index"
+                ></slot>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Slot pour le pied de tableau -->
+        <div class="table-footer">
+          <slot name="footer">
+            <div class="pagination">
+              <span>{{ items.length }} éléments</span>
+            </div>
+          </slot>
+        </div>
+      </div>
+    </template>
+    
+    <style scoped>
+    .data-table-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .table-header {
+      padding: 10px 15px;
+      background-color: #f5f5f5;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 10px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .data-table th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+    }
+    
+    .data-table tbody tr:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .table-footer {
+      padding: 10px 15px;
+      background-color: #f5f5f5;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    </style>
+    ```
+  </Step>
+  
+  <Step title="Utilisez le Composant DataTable avec Personnalisation">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, computed } from 'vue'
+    import DataTable from './DataTable.vue'
+    
+    // Données factices d'utilisateurs
+    const users = ref([
+      { id: 1, name: 'Alice Dupont', email: 'alice@example.com', role: 'Admin', status: 'Active', lastLogin: '2023-04-10' },
+      { id: 2, name: 'Bob Martin', email: 'bob@example.com', role: 'User', status: 'Inactive', lastLogin: '2023-03-22' },
+      { id: 3, name: 'Claire Lefèvre', email: 'claire@example.com', role: 'Editor', status: 'Active', lastLogin: '2023-04-08' },
+      { id: 4, name: 'David Bernard', email: 'david@example.com', role: 'User', status: 'Active', lastLogin: '2023-04-05' }
+    ])
+    
+    // Définition des colonnes
+    const columns = [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Nom' },
+      { key: 'email', label: 'Email' },
+      { key: 'role', label: 'Rôle' },
+      { key: 'status', label: 'Statut' },
+      { key: 'lastLogin', label: 'Dernière Connexion' }
+    ]
+    
+    function formatDate(dateString) {
+      const date = new Date(dateString)
+      return new Intl.DateTimeFormat('fr-FR').format(date)
+    }
+    
+    function toggleStatus(user) {
+      user.status = user.status === 'Active' ? 'Inactive' : 'Active'
+    }
+    
+    function deleteUser(index) {
+      if (confirm(`Voulez-vous vraiment supprimer ${users.value[index].name}?`)) {
+        users.value.splice(index, 1)
+      }
+    }
+    </script>
+    
+    <template>
+      <div class="users-container">
+        <h1>Gestion des Utilisateurs</h1>
+        
+        <DataTable :items="users" :columns="columns">
+          <!-- Personnalisation de l'en-tête -->
+          <template #header>
+            <div class="custom-header">
+              <h2>Liste des Utilisateurs</h2>
+              <button class="add-btn">Ajouter un Utilisateur</button>
+            </div>
+          </template>
+          
+          <!-- Personnalisation du format de l'ID -->
+          <template #column-id="{ value }">
+            <span class="id-badge">#{{ value }}</span>
+          </template>
+          
+          <!-- Personnalisation du format de l'email -->
+          <template #column-email="{ value }">
+            <a :href="`mailto:${value}`">{{ value }}</a>
+          </template>
+          
+          <!-- Personnalisation du statut avec badge coloré -->
+          <template #column-status="{ value, item }">
+            <span 
+              class="status-badge" 
+              :class="value === 'Active' ? 'active' : 'inactive'"
+              @click="toggleStatus(item)"
+            >
+              {{ value }}
+            </span>
+          </template>
+          
+          <!-- Format de date personnalisé -->
+          <template #column-lastLogin="{ value }">
+            {{ formatDate(value) }}
+          </template>
+          
+          <!-- Actions par ligne -->
+          <template #row-actions="{ item, index }">
+            <div class="action-buttons">
+              <button class="edit-btn">Éditer</button>
+              <button 
+                class="delete-btn"
+                @click="deleteUser(index)"
+              >
+                Supprimer
+              </button>
+            </div>
+          </template>
+          
+          <!-- Pied de tableau personnalisé -->
+          <template #footer>
+            <div class="table-summary">
+              <span>{{ users.length }} utilisateurs au total</span>
+              <div class="filters">
+                <label>
+                  <input type="checkbox" v-model="showOnlyActive">
+                  Afficher uniquement les utilisateurs actifs
+                </label>
+              </div>
+            </div>
+          </template>
+        </DataTable>
+      </div>
+    </template>
+    
+    <style scoped>
+    .users-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .custom-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .add-btn {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .id-badge {
+      background-color: #f0f0f0;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 0.8rem;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    
+    .status-badge.active {
+      background-color: #e6f7e6;
+      color: #2e7d32;
+    }
+    
+    .status-badge.inactive {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .edit-btn, .delete-btn {
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    
+    .edit-btn {
+      background-color: #2196f3;
+      color: white;
+    }
+    
+    .delete-btn {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    .table-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    </style>
+    ```
+  </Step>
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Privilégier la Composition" icon="🧩">
+    Utilisez les slots pour créer des composants flexibles et composables
+  </Card>
+  <Card title="Toujours Fournir des Valeurs par Défaut" icon="🔄">
+    Chaque slot devrait avoir un contenu par défaut sensible
+  </Card>
+  <Card title="Documenter les Valeurs Passées" icon="📚">
+    Documentez clairement les props passées aux slots avec portée
+  </Card>
+  <Card title="Limiter la Complexité" icon="⚡">
+    Chaque slot devrait avoir une responsabilité unique et claire
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Provide/Inject" href="provide-inject" icon="🔄">
+    Communication avancée entre composants
+  </Card>
+  <Card title="Composables" href="composables" icon="🧰">
+    Réutilisation de la logique entre composants
+  </Card>
+</Cards> 

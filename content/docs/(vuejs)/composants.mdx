@@ -1,0 +1,955 @@
+---
+title: Les Composants en Vue.js
+description: Apprenez à créer, structurer et utiliser des composants réutilisables pour construire des interfaces modulaires avec Vue.js.
+---
+
+import { Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Composants
+
+<Callout type="info">
+  Les composants sont des blocs de construction réutilisables qui vous permettent de diviser votre interface en éléments indépendants et isolés. Vue.js est construit sur une architecture orientée composants.
+</Callout>
+
+## Anatomie d'un Composant Vue
+
+Un composant Vue typique comprend trois sections principales :
+
+```vue showLineNumbers
+<script setup>
+// Logique du composant
+import { ref } from 'vue'
+const count = ref(0)
+function increment() {
+  count.value++
+}
+</script>
+
+<template>
+  <!-- Structure HTML -->
+  <div class="counter">
+    <p>Compteur: {{ count }}</p>
+    <button @click="increment">Incrémenter</button>
+  </div>
+</template>
+
+<style scoped>
+/* Style CSS avec portée limitée au composant */
+.counter {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+</style>
+```
+
+## Création de Composants
+
+### Composants à Fichier Unique (SFC)
+
+<Tabs items={['MonComposant.vue', 'App.vue']}>
+  <Tab value="MonComposant.vue">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref } from 'vue'
+
+  const message = ref('Hello from MonComposant')
+  </script>
+
+  <template>
+    <div class="mon-composant">
+      <h2>{{ message }}</h2>
+      <slot></slot>
+    </div>
+  </template>
+
+  <style scoped>
+  .mon-composant {
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  }
+  </style>
+  ```
+  </Tab>
+  <Tab value="App.vue">
+  ```vue showLineNumbers
+  <script setup>
+  import MonComposant from './MonComposant.vue'
+  </script>
+
+  <template>
+    <div class="app">
+      <h1>Application Vue</h1>
+      <MonComposant>
+        <p>Contenu personnalisé via slot</p>
+      </MonComposant>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Options API vs Composition API
+
+<Tabs items={['Composition API', 'Options API']}>
+  <Tab value="Composition API">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref, onMounted } from 'vue'
+
+  // État réactif
+  const count = ref(0)
+
+  // Méthodes
+  function increment() {
+    count.value++
+  }
+
+  // Hooks de cycle de vie
+  onMounted(() => {
+    console.log('Composant monté')
+  })
+  </script>
+
+  <template>
+    <button @click="increment">{{ count }}</button>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Options API">
+  ```vue showLineNumbers
+  <script>
+  export default {
+    // État réactif
+    data() {
+      return {
+        count: 0
+      }
+    },
+    
+    // Méthodes
+    methods: {
+      increment() {
+        this.count++
+      }
+    },
+    
+    // Hooks de cycle de vie
+    mounted() {
+      console.log('Composant monté')
+    }
+  }
+  </script>
+
+  <template>
+    <button @click="increment">{{ count }}</button>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+## Enregistrement et Utilisation des Composants
+
+### Importation et Utilisation
+
+```vue showLineNumbers
+<script setup>
+// Import direct
+import ButtonCounter from './components/ButtonCounter.vue'
+import UserProfile from './components/UserProfile.vue'
+</script>
+
+<template>
+  <div>
+    <h1>Démonstration des composants</h1>
+    
+    <!-- Utilisation des composants -->
+    <ButtonCounter />
+    <ButtonCounter />
+    
+    <UserProfile 
+      :user="{ name: 'Alice', email: 'alice@example.com' }" 
+    />
+  </div>
+</template>
+```
+
+### Enregistrement Global (Option)
+
+```js showLineNumbers
+// main.js
+import { createApp } from 'vue'
+import App from './App.vue'
+import GlobalComponent from './components/GlobalComponent.vue'
+
+const app = createApp(App)
+
+// Enregistrement global - à utiliser avec parcimonie
+app.component('GlobalComponent', GlobalComponent)
+
+app.mount('#app')
+```
+
+## Communication Entre Composants
+
+### Props (Parents → Enfants)
+
+<Tabs items={['Parent', 'Enfant']}>
+  <Tab value="Parent">
+  ```vue showLineNumbers
+  <script setup>
+  import UserInfo from './UserInfo.vue'
+
+  const user = {
+    id: 1,
+    name: 'Jean Dupont',
+    email: 'jean@example.com',
+    role: 'admin'
+  }
+  </script>
+
+  <template>
+    <div>
+      <h1>Profil Utilisateur</h1>
+      <UserInfo 
+        :user-id="user.id"
+        :name="user.name"
+        :email="user.email"
+        :role="user.role"
+      />
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Enfant">
+  ```vue showLineNumbers
+  <script setup>
+  // Définition des props avec validation
+  const props = defineProps({
+    userId: {
+      type: Number,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String,
+      required: true,
+      validator: (value) => {
+        return value.includes('@')
+      }
+    },
+    role: {
+      type: String,
+      default: 'user',
+      validator: (value) => {
+        return ['admin', 'editor', 'user'].includes(value)
+      }
+    }
+  })
+  </script>
+
+  <template>
+    <div class="user-card">
+      <h2>{{ name }}</h2>
+      <p>ID: {{ userId }}</p>
+      <p>Email: {{ email }}</p>
+      <p>Rôle: {{ role }}</p>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Événements Personnalisés (Enfants → Parents)
+
+<Tabs items={['Enfant', 'Parent']}>
+  <Tab value="Enfant">
+  ```vue showLineNumbers
+  <script setup>
+  // Définir un émetteur d'événements
+  const emit = defineEmits(['delete', 'update'])
+
+  function handleDelete() {
+    emit('delete')
+  }
+
+  function handleUpdate(newValue) {
+    emit('update', newValue)
+  }
+  </script>
+
+  <template>
+    <div>
+      <button @click="handleDelete">Supprimer</button>
+      <button @click="handleUpdate('Nouvelle valeur')">Mettre à jour</button>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Parent">
+  ```vue showLineNumbers
+  <script setup>
+  import ActionButtons from './ActionButtons.vue'
+
+  function onDelete() {
+    console.log('Élément supprimé')
+  }
+
+  function onUpdate(value) {
+    console.log('Mise à jour avec:', value)
+  }
+  </script>
+
+  <template>
+    <div>
+      <h2>Gestion des Actions</h2>
+      <ActionButtons
+        @delete="onDelete"
+        @update="onUpdate"
+      />
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+## Slots - Injection de Contenu
+
+### Slots Basiques
+
+```vue showLineNumbers
+<!-- CardComponent.vue -->
+<template>
+  <div class="card">
+    <div class="card-header">
+      <slot name="header">
+        <!-- Contenu par défaut -->
+        <h3>Titre par défaut</h3>
+      </slot>
+    </div>
+    
+    <div class="card-body">
+      <slot>
+        <!-- Contenu par défaut pour le slot par défaut -->
+        <p>Aucun contenu fourni</p>
+      </slot>
+    </div>
+    
+    <div class="card-footer">
+      <slot name="footer">
+        <!-- Contenu par défaut du footer -->
+        <p>Footer par défaut</p>
+      </slot>
+    </div>
+  </div>
+</template>
+```
+
+### Utilisation des Slots
+
+```vue showLineNumbers
+<script setup>
+import CardComponent from './CardComponent.vue'
+</script>
+
+<template>
+  <CardComponent>
+    <!-- Contenu pour le slot par défaut -->
+    <p>Voici le contenu principal de la carte.</p>
+    
+    <!-- Contenu pour le slot nommé header -->
+    <template #header>
+      <h2>Mon Titre Personnalisé</h2>
+    </template>
+    
+    <!-- Contenu pour le slot nommé footer -->
+    <template #footer>
+      <div class="custom-footer">
+        <button>Action</button>
+        <span>Dernière mise à jour: aujourd'hui</span>
+      </div>
+    </template>
+  </CardComponent>
+</template>
+```
+
+### Slots avec Portée
+
+```vue showLineNumbers
+<!-- SlotPortee.vue -->
+<script setup>
+import { ref } from 'vue'
+
+const items = ref(['Pomme', 'Banane', 'Orange', 'Fraise'])
+</script>
+
+<template>
+  <div>
+    <ul>
+      <li v-for="(item, index) in items" :key="index">
+        <!-- Transmet l'item et l'index au slot -->
+        <slot :item="item" :index="index" :remove="() => items.splice(index, 1)">
+          {{ item }}
+        </slot>
+      </li>
+    </ul>
+  </div>
+</template>
+```
+
+```vue showLineNumbers
+<!-- Utilisation -->
+<script setup>
+import SlotPortee from './SlotPortee.vue'
+</script>
+
+<template>
+  <SlotPortee>
+    <template #default="{ item, index, remove }">
+      <div class="fruit-item">
+        <span>{{ index + 1 }}. {{ item }}</span>
+        <button @click="remove">Supprimer</button>
+      </div>
+    </template>
+  </SlotPortee>
+</template>
+```
+
+## Composants Asynchrones
+
+```js showLineNumbers
+<script setup>
+import { defineAsyncComponent } from 'vue'
+
+// Chargement asynchrone avec gestion du chargement et des erreurs
+const AsyncComponent = defineAsyncComponent({
+  loader: () => import('./HeavyComponent.vue'),
+  loadingComponent: () => import('./LoadingSpinner.vue'),
+  errorComponent: () => import('./ErrorDisplay.vue'),
+  delay: 200,
+  timeout: 5000
+})
+
+// Chargement asynchrone simplifié
+const SimpleAsyncComponent = defineAsyncComponent(() => 
+  import('./AnotherComponent.vue')
+)
+</script>
+
+<template>
+  <div>
+    <AsyncComponent />
+    <SimpleAsyncComponent />
+  </div>
+</template>
+```
+
+## Composants Dynamiques
+
+```vue showLineNumbers
+<script setup>
+import { ref, shallowRef } from 'vue'
+import TabA from './TabA.vue'
+import TabB from './TabB.vue'
+import TabC from './TabC.vue'
+
+// shallowRef est plus performant pour les composants
+const currentTab = shallowRef(TabA)
+
+function switchTab(tab) {
+  switch(tab) {
+    case 'a': currentTab.value = TabA; break
+    case 'b': currentTab.value = TabB; break
+    case 'c': currentTab.value = TabC; break
+  }
+}
+</script>
+
+<template>
+  <div>
+    <div class="tabs">
+      <button @click="switchTab('a')">Tab A</button>
+      <button @click="switchTab('b')">Tab B</button>
+      <button @click="switchTab('c')">Tab C</button>
+    </div>
+    
+    <!-- Le composant change dynamiquement -->
+    <component :is="currentTab"></component>
+    
+    <!-- Avec keep-alive pour préserver l'état -->
+    <keep-alive>
+      <component :is="currentTab"></component>
+    </keep-alive>
+  </div>
+</template>
+```
+
+## Fournisseur/Injecteur (Provide/Inject)
+
+<Tabs items={['Parent (Provider)', 'Enfant Profond (Consumer)']}>
+  <Tab value="Parent (Provider)">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref, provide, readonly } from 'vue'
+  import ChildComponent from './ChildComponent.vue'
+
+  // Valeurs à fournir
+  const theme = ref('light')
+  const user = ref({ name: 'Alice', role: 'admin' })
+
+  // Fonction pour changer le thème
+  function toggleTheme() {
+    theme.value = theme.value === 'light' ? 'dark' : 'light'
+  }
+
+  // Fournit des valeurs et fonctions aux descendants
+  provide('theme', readonly(theme)) // lecture seule
+  provide('user', user)
+  provide('toggleTheme', toggleTheme)
+  </script>
+
+  <template>
+    <div :class="['app', theme]">
+      <h1>Application</h1>
+      <button @click="toggleTheme">Changer de thème</button>
+      <ChildComponent />
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Enfant Profond (Consumer)">
+  ```vue showLineNumbers
+  <script setup>
+  import { inject } from 'vue'
+
+  // Injecter les valeurs fournies par un ancêtre
+  const theme = inject('theme')
+  const user = inject('user')
+  const toggleTheme = inject('toggleTheme')
+
+  // Valeur par défaut si non fournie
+  const appVersion = inject('version', '1.0.0')
+  </script>
+
+  <template>
+    <div :class="['component', theme]">
+      <h3>Composant Enfant</h3>
+      <p>Thème actuel: {{ theme }}</p>
+      <p>Utilisateur: {{ user.name }} ({{ user.role }})</p>
+      <p>Version: {{ appVersion }}</p>
+      <button @click="toggleTheme">Toggle Theme</button>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un système de composants pour une application de gestion de tâches (Todo List).
+</Callout>
+
+<Steps>
+  <Step title="Créez le composant TodoItem">
+    Créez un composant qui affiche une tâche et permet de la marquer comme complétée ou de la supprimer.
+
+    ```vue showLineNumbers
+    <!-- TodoItem.vue -->
+    <script setup>
+    const props = defineProps({
+      todo: {
+        type: Object,
+        required: true
+      }
+    })
+
+    const emit = defineEmits(['toggle-complete', 'delete'])
+
+    function toggleComplete() {
+      emit('toggle-complete', props.todo.id)
+    }
+
+    function deleteTodo() {
+      emit('delete', props.todo.id)
+    }
+    </script>
+
+    <template>
+      <div class="todo-item" :class="{ completed: todo.completed }">
+        <input 
+          type="checkbox" 
+          :checked="todo.completed"
+          @change="toggleComplete"
+        />
+        <span class="todo-text">{{ todo.text }}</span>
+        <button @click="deleteTodo" class="delete-btn">
+          Supprimer
+        </button>
+      </div>
+    </template>
+
+    <style scoped>
+    .todo-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .todo-text {
+      margin: 0 10px;
+      flex: 1;
+    }
+
+    .completed .todo-text {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .delete-btn {
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    </style>
+    ```
+  </Step>
+
+  <Step title="Créez le composant TodoList">
+    Créez un composant qui affiche la liste des tâches en utilisant `TodoItem`.
+
+    ```vue showLineNumbers
+    <!-- TodoList.vue -->
+    <script setup>
+    import TodoItem from './TodoItem.vue'
+
+    const props = defineProps({
+      todos: {
+        type: Array,
+        required: true
+      }
+    })
+
+    const emit = defineEmits(['toggle-complete', 'delete'])
+
+    function handleToggleComplete(id) {
+      emit('toggle-complete', id)
+    }
+
+    function handleDelete(id) {
+      emit('delete', id)
+    }
+    </script>
+
+    <template>
+      <div class="todo-list">
+        <h2>Liste des tâches ({{ todos.length }})</h2>
+        
+        <p v-if="todos.length === 0" class="empty-message">
+          Aucune tâche à afficher. Ajoutez-en une!
+        </p>
+        
+        <TodoItem 
+          v-for="todo in todos"
+          :key="todo.id"
+          :todo="todo"
+          @toggle-complete="handleToggleComplete"
+          @delete="handleDelete"
+        />
+      </div>
+    </template>
+
+    <style scoped>
+    .todo-list {
+      margin: 20px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    h2 {
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .empty-message {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
+    </style>
+    ```
+  </Step>
+
+  <Step title="Créez le composant AddTodo">
+    Créez un composant pour ajouter de nouvelles tâches.
+
+    ```vue showLineNumbers
+    <!-- AddTodo.vue -->
+    <script setup>
+    import { ref } from 'vue'
+
+    const emit = defineEmits(['add'])
+    const newTodo = ref('')
+
+    function handleSubmit() {
+      if (newTodo.value.trim()) {
+        emit('add', newTodo.value.trim())
+        newTodo.value = ''
+      }
+    }
+    </script>
+
+    <template>
+      <form @submit.prevent="handleSubmit" class="add-todo-form">
+        <input 
+          v-model="newTodo"
+          placeholder="Ajouter une nouvelle tâche..."
+          class="todo-input"
+        />
+        <button type="submit" class="add-btn">
+          Ajouter
+        </button>
+      </form>
+    </template>
+
+    <style scoped>
+    .add-todo-form {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .todo-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px 0 0 4px;
+      font-size: 16px;
+    }
+
+    .add-btn {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    </style>
+    ```
+  </Step>
+
+  <Step title="Créez le composant TodoFilter">
+    Créez un composant pour filtrer les tâches par statut.
+
+    ```vue showLineNumbers
+    <!-- TodoFilter.vue -->
+    <script setup>
+    const props = defineProps({
+      filter: {
+        type: String,
+        default: 'all'
+      }
+    })
+
+    const emit = defineEmits(['change-filter'])
+
+    function setFilter(newFilter) {
+      emit('change-filter', newFilter)
+    }
+    </script>
+
+    <template>
+      <div class="todo-filter">
+        <button 
+          :class="{ active: filter === 'all' }"
+          @click="setFilter('all')"
+        >
+          Toutes
+        </button>
+        <button 
+          :class="{ active: filter === 'active' }"
+          @click="setFilter('active')"
+        >
+          Actives
+        </button>
+        <button 
+          :class="{ active: filter === 'completed' }"
+          @click="setFilter('completed')"
+        >
+          Terminées
+        </button>
+      </div>
+    </template>
+
+    <style scoped>
+    .todo-filter {
+      display: flex;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .todo-filter button {
+      background-color: transparent;
+      border: 1px solid #ddd;
+      padding: 5px 10px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .todo-filter button.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    </style>
+    ```
+  </Step>
+
+  <Step title="Assemblez l'application TodoApp">
+    Créez le composant principal qui assemblera tous les autres.
+
+    ```vue showLineNumbers
+    <!-- TodoApp.vue -->
+    <script setup>
+    import { ref, computed } from 'vue'
+    import AddTodo from './AddTodo.vue'
+    import TodoList from './TodoList.vue'
+    import TodoFilter from './TodoFilter.vue'
+
+    // État de l'application
+    const todos = ref([
+      { id: 1, text: 'Apprendre Vue.js', completed: true },
+      { id: 2, text: 'Créer une Todo List', completed: false },
+      { id: 3, text: 'Maîtriser les composants', completed: false }
+    ])
+    const filter = ref('all')
+    
+    // ID pour les nouvelles tâches
+    let nextId = computed(() => {
+      return todos.value.length > 0 
+        ? Math.max(...todos.value.map(t => t.id)) + 1 
+        : 1
+    })
+
+    // Filtrer les tâches selon le filtre actif
+    const filteredTodos = computed(() => {
+      switch (filter.value) {
+        case 'active':
+          return todos.value.filter(todo => !todo.completed)
+        case 'completed':
+          return todos.value.filter(todo => todo.completed)
+        default:
+          return todos.value
+      }
+    })
+
+    // Gérer l'ajout d'une nouvelle tâche
+    function addTodo(text) {
+      todos.value.push({
+        id: nextId.value,
+        text,
+        completed: false
+      })
+    }
+
+    // Basculer le statut d'une tâche
+    function toggleComplete(id) {
+      const todo = todos.value.find(todo => todo.id === id)
+      if (todo) {
+        todo.completed = !todo.completed
+      }
+    }
+
+    // Supprimer une tâche
+    function deleteTodo(id) {
+      const index = todos.value.findIndex(todo => todo.id === id)
+      if (index !== -1) {
+        todos.value.splice(index, 1)
+      }
+    }
+
+    // Changer le filtre
+    function changeFilter(newFilter) {
+      filter.value = newFilter
+    }
+    </script>
+
+    <template>
+      <div class="todo-app">
+        <h1>Application de Tâches</h1>
+        
+        <AddTodo @add="addTodo" />
+        
+        <TodoFilter 
+          :filter="filter"
+          @change-filter="changeFilter"
+        />
+        
+        <TodoList 
+          :todos="filteredTodos"
+          @toggle-complete="toggleComplete"
+          @delete="deleteTodo"
+        />
+      </div>
+    </template>
+
+    <style scoped>
+    .todo-app {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    </style>
+    ```
+  </Step>
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Composants Atomiques" icon="🧩">
+    Créez des composants petits et réutilisables avec une responsabilité unique
+  </Card>
+  <Card title="Nommage Explicite" icon="📝">
+    Utilisez des noms descriptifs pour vos composants (UserProfileCard vs Card)
+  </Card>
+  <Card title="Props Validées" icon="✅">
+    Validez toujours vos props avec types et contraintes
+  </Card>
+  <Card title="Communication Claire" icon="🔄">
+    Utilisez props pour descendre les données et événements pour remonter
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Props" href="props" icon="🔄">
+    Approfondissez la communication parent-enfant
+  </Card>
+  <Card title="Événements" href="evenements" icon="📢">
+    Maîtrisez la communication enfant-parent
+  </Card>
+</Cards> 

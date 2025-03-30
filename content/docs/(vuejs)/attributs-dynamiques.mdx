@@ -1,0 +1,264 @@
+---
+title: Attributs Dynamiques en Vue.js
+description: Apprenez à manipuler dynamiquement les attributs HTML dans vos composants Vue.js à l'aide des directives de liaison.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Attributs Dynamiques
+
+<Callout type="info">
+  Les attributs dynamiques vous permettent de contrôler les attributs HTML de vos éléments en fonction de l'état de votre application.
+</Callout>
+
+## La Directive v-bind
+
+<Steps>
+### Syntaxe de base
+1. Directive complète : `v-bind:attribute="expression"`
+2. Forme abrégée (recommandée) : `:attribute="expression"`
+</Steps>
+
+## Exemples d'Utilisation
+
+<Tabs items={['basique', 'multiple', 'styles', 'classes']}>
+  <Tab label="Liaison basique" value="basique">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref } from 'vue'
+    
+    const imageUrl = ref('https://example.com/image.jpg')
+    const altText = ref('Description de l\'image')
+    </script>
+    
+    <template>
+      <img :src="imageUrl" :alt="altText">
+    </template>
+    ```
+  </Tab>
+  <Tab label="Attributs multiples" value="multiple">
+    ```vue showLineNumbers
+    <script setup>
+    import { reactive } from 'vue'
+    
+    const inputAttrs = reactive({
+      type: 'text',
+      maxlength: 100,
+      placeholder: 'Entrez votre texte ici',
+      required: true
+    })
+    </script>
+    
+    <template>
+      <input v-bind="inputAttrs">
+    </template>
+    ```
+  </Tab>
+  <Tab label="Styles inline" value="styles">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, reactive } from 'vue'
+    
+    const isImportant = ref(true)
+    const textColor = ref('blue')
+    
+    const styles = reactive({
+      fontSize: '18px',
+      fontWeight: 'bold',
+      lineHeight: '1.5'
+    })
+    </script>
+    
+    <template>
+      <!-- Objet de style -->
+      <p :style="styles">Texte stylisé</p>
+      
+      <!-- Styles conditionnels -->
+      <p :style="{ color: textColor, fontWeight: isImportant ? 'bold' : 'normal' }">
+        Texte important
+      </p>
+      
+      <!-- Tableau de styles -->
+      <p :style="[styles, { color: textColor }]">
+        Texte avec plusieurs styles
+      </p>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Classes CSS" value="classes">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, reactive } from 'vue'
+    
+    const isActive = ref(true)
+    const hasError = ref(false)
+    
+    const classObject = reactive({
+      active: true,
+      'text-danger': false,
+      'text-bold': true
+    })
+    </script>
+    
+    <template>
+      <!-- Classe unique conditionnelle -->
+      <div :class="{ active: isActive }">
+        Élément actif
+      </div>
+      
+      <!-- Plusieurs classes conditionnelles -->
+      <div :class="{ active: isActive, error: hasError }">
+        Élément avec conditions multiples
+      </div>
+      
+      <!-- Objet de classes -->
+      <div :class="classObject">
+        Élément avec objet de classes
+      </div>
+      
+      <!-- Tableau de classes -->
+      <div :class="['static-class', { active: isActive }]">
+        Élément avec tableau de classes
+      </div>
+    </template>
+    ```
+  </Tab>
+</Tabs>
+
+## Liaison avec des Expressions Booléennes
+
+<Callout type="info">
+  Les attributs booléens en HTML (comme `disabled`, `required`, etc.) sont gérés différemment des autres attributs.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+
+const isButtonDisabled = ref(true)
+const isFormSubmitting = ref(false)
+</script>
+
+<template>
+  <button :disabled="isButtonDisabled">
+    Bouton Désactivé
+  </button>
+  
+  <button :disabled="isFormSubmitting">
+    {{ isFormSubmitting ? 'Envoi en cours...' : 'Envoyer' }}
+  </button>
+</template>
+```
+
+## Liaison avec des Attributs Personnalisés
+
+<Callout type="warning">
+  Vue.js peut lier n'importe quel attribut, y compris les attributs de données (data-*) et les attributs ARIA.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue'
+
+const userId = ref('user-123')
+const tooltipText = ref('Informations supplémentaires')
+</script>
+
+<template>
+  <div :data-user-id="userId" :aria-label="tooltipText">
+    Élément avec attributs personnalisés
+  </div>
+</template>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Forme Abrégée" icon="⚡">
+    Préférez la syntaxe abrégée (`:attr`) pour plus de lisibilité
+  </Card>
+  <Card title="Expressions Simples" icon="📝">
+    Gardez les expressions dans les liens simples et lisibles
+  </Card>
+  <Card title="Computed Properties" icon="🧮">
+    Utilisez des propriétés calculées pour les expressions complexes
+  </Card>
+  <Card title="Objets pour Classes/Styles" icon="🎨">
+    Utilisez des objets réactifs pour les classes et styles complexes
+  </Card>
+</Cards>
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un composant de carte (card) avec des attributs dynamiques qui changent en fonction de l'état : couleur de bordure, classes CSS, et attributs ARIA d'accessibilité.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+// À vous de jouer !
+const theme = ref('success') // success, warning, danger
+const isExpanded = ref(false)
+
+const cardClasses = computed(() => ({
+  'card': true,
+  [`card-${theme.value}`]: true,
+  'card-expanded': isExpanded.value
+}))
+
+function toggleExpand() {
+  isExpanded.value = !isExpanded.value
+}
+</script>
+
+<template>
+  <div 
+    :class="cardClasses"
+    :aria-expanded="isExpanded"
+    :data-theme="theme"
+  >
+    <div class="card-header">
+      <h3>Carte Dynamique</h3>
+      <button @click="toggleExpand">
+        {{ isExpanded ? 'Réduire' : 'Étendre' }}
+      </button>
+    </div>
+    <div class="card-body">
+      Contenu de la carte
+    </div>
+  </div>
+</template>
+
+<style>
+.card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card-success { border-color: #28a745; }
+.card-warning { border-color: #ffc107; }
+.card-danger { border-color: #dc3545; }
+
+.card-expanded {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+```
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Écouteurs d'Événements" href="ecouteurs-evenements" icon="👂">
+    Apprenez à gérer les interactions utilisateur
+  </Card>
+  <Card title="Formulaires" href="formulaires" icon="📝">
+    Découvrez la liaison bidirectionnelle avec v-model
+  </Card>
+</Cards> 

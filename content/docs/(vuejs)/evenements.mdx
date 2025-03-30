@@ -1,0 +1,778 @@
+---
+title: Les Événements en Vue.js
+description: Apprenez à gérer les événements utilisateur et à créer une communication fluide entre les composants avec le système d'événements de Vue.js.
+---
+
+import { Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Événements
+
+<Callout type="info">
+  Les événements permettent aux composants d'interagir avec leur environnement et de communiquer entre eux. Vue.js propose un système d'événements riche pour gérer à la fois les événements DOM natifs et les événements personnalisés entre composants.
+</Callout>
+
+## Événements DOM Natifs
+
+### Écoute d'Événements de Base
+
+```vue showLineNumbers
+<template>
+  <!-- Syntaxe de base -->
+  <button @click="handleClick">Cliquez-moi</button>
+  
+  <!-- Syntaxe alternative (moins utilisée) -->
+  <button v-on:click="handleClick">Cliquez-moi</button>
+  
+  <!-- Appeler une méthode avec des arguments -->
+  <button @click="sayHello('Monde', $event)">Hello</button>
+  
+  <!-- Instructions en ligne -->
+  <button @click="count++">Compteur: {{ count }}</button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const count = ref(0)
+
+function handleClick(event) {
+  console.log('Bouton cliqué!', event)
+}
+
+function sayHello(name, event) {
+  console.log(`Hello ${name}!`, event)
+}
+</script>
+```
+
+### Événements Courants
+
+```vue showLineNumbers
+<template>
+  <!-- Événements de souris -->
+  <div @click="handleClick">Clic</div>
+  <div @dblclick="handleDoubleClick">Double-clic</div>
+  <div @mouseover="handleMouseOver">Survoler</div>
+  <div @mouseout="handleMouseOut">Quitter</div>
+  
+  <!-- Événements de formulaire -->
+  <input @input="handleInput" />
+  <input @change="handleChange" />
+  <input @focus="handleFocus" />
+  <input @blur="handleBlur" />
+  
+  <!-- Événements de clavier -->
+  <input @keyup="handleKeyUp" />
+  <input @keydown="handleKeyDown" />
+  <input @keypress="handleKeyPress" />
+</template>
+```
+
+## Modificateurs d'Événements
+
+### Modificateurs d'Événements Courants
+
+```vue showLineNumbers
+<template>
+  <!-- Empêcher le comportement par défaut -->
+  <a @click.prevent="handleClick" href="#">Lien</a>
+  
+  <!-- Arrêter la propagation -->
+  <button @click.stop="handleClick">Stop Propagation</button>
+  
+  <!-- Les deux combinés -->
+  <a @click.stop.prevent="handleClick" href="#">Stop & Prevent</a>
+  
+  <!-- Capturé en phase de capture -->
+  <div @click.capture="handleClick">Capture</div>
+  
+  <!-- Seulement si l'événement provient de cet élément -->
+  <div @click.self="handleClick">Self Only</div>
+  
+  <!-- Une seule fois -->
+  <button @click.once="handleClick">Une seule fois</button>
+  
+  <!-- Événement passif (améliore les performances) -->
+  <div @scroll.passive="handleScroll">Contenu défilant</div>
+</template>
+```
+
+### Modificateurs de Touches
+
+```vue showLineNumbers
+<template>
+  <!-- Touches spécifiques -->
+  <input @keyup.enter="submit" />
+  <input @keyup.esc="cancel" />
+  
+  <!-- Touches de modification -->
+  <div @click.ctrl="handleCtrlClick">Ctrl + Click</div>
+  <div @click.alt="handleAltClick">Alt + Click</div>
+  <div @click.shift="handleShiftClick">Shift + Click</div>
+  <div @click.meta="handleMetaClick">Meta + Click</div>
+  
+  <!-- Combinaisons -->
+  <div @keyup.ctrl.enter="handleCtrlEnter">Ctrl + Enter</div>
+  
+  <!-- Touches exactes (seulement ces modificateurs) -->
+  <div @click.ctrl.exact="handleExactCtrl">
+    Uniquement Ctrl + Click
+  </div>
+  
+  <!-- Aucun modificateur -->
+  <div @click.exact="handleClickWithoutModifiers">
+    Clic sans modificateur
+  </div>
+</template>
+```
+
+### Modificateurs de Boutons de Souris
+
+```vue showLineNumbers
+<template>
+  <div @click.left="handleLeftClick">Clic gauche</div>
+  <div @click.right="handleRightClick">Clic droit</div>
+  <div @click.middle="handleMiddleClick">Clic milieu</div>
+</template>
+```
+
+## Événements Personnalisés entre Composants
+
+### Émettre des Événements (Component Enfant)
+
+<Tabs items={['Composition API', 'Options API']}>
+  <Tab value="Composition API">
+  ```vue showLineNumbers
+  <script setup>
+  // Déclarer les événements émis
+  const emit = defineEmits(['update', 'delete', 'custom-event'])
+  
+  function sendUpdate() {
+    // Émettre un événement sans données
+    emit('update')
+  }
+  
+  function sendData() {
+    // Émettre un événement avec des données
+    emit('custom-event', {
+      id: 123,
+      timestamp: Date.now(),
+      message: 'Hello from child'
+    })
+  }
+  
+  function deleteItem(id) {
+    // Émettre avec plusieurs arguments
+    emit('delete', id, 'Élément supprimé')
+  }
+  </script>
+  
+  <template>
+    <div>
+      <button @click="sendUpdate">Mettre à jour</button>
+      <button @click="sendData">Envoyer des données</button>
+      <button @click="deleteItem(42)">Supprimer</button>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Options API">
+  ```vue showLineNumbers
+  <script>
+  export default {
+    // Déclarer les événements émis (optionnel mais recommandé)
+    emits: ['update', 'delete', 'custom-event'],
+    
+    methods: {
+      sendUpdate() {
+        // Émettre un événement sans données
+        this.$emit('update')
+      },
+      
+      sendData() {
+        // Émettre un événement avec des données
+        this.$emit('custom-event', {
+          id: 123,
+          timestamp: Date.now(),
+          message: 'Hello from child'
+        })
+      },
+      
+      deleteItem(id) {
+        // Émettre avec plusieurs arguments
+        this.$emit('delete', id, 'Élément supprimé')
+      }
+    }
+  }
+  </script>
+  
+  <template>
+    <div>
+      <button @click="sendUpdate">Mettre à jour</button>
+      <button @click="sendData">Envoyer des données</button>
+      <button @click="deleteItem(42)">Supprimer</button>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Écouter des Événements Personnalisés (Composant Parent)
+
+```vue showLineNumbers
+<script setup>
+import ChildComponent from './ChildComponent.vue'
+
+function handleUpdate() {
+  console.log('Mise à jour reçue du composant enfant')
+}
+
+function handleDelete(id, message) {
+  console.log(`Élément ${id} supprimé: ${message}`)
+}
+
+function handleCustomEvent(data) {
+  console.log('Événement personnalisé reçu avec données:', data)
+}
+</script>
+
+<template>
+  <div>
+    <h2>Composant Parent</h2>
+    
+    <ChildComponent
+      @update="handleUpdate"
+      @delete="handleDelete"
+      @custom-event="handleCustomEvent"
+    />
+  </div>
+</template>
+```
+
+### Validation des Événements
+
+```vue showLineNumbers
+<script setup>
+// Validation simple (liste d'événements)
+const emit = defineEmits(['search', 'reset'])
+
+// Validation avec schéma
+const emitWithSchema = defineEmits({
+  // Événement sans validation
+  click: null,
+  
+  // Événement avec validation
+  submit: (payload) => {
+    // Vérifie que le payload est un objet avec une propriété email
+    if (!payload || !payload.email) {
+      console.warn('L\'événement submit nécessite un email')
+      return false
+    }
+    
+    // Valider le format email (simple exemple)
+    if (!payload.email.includes('@')) {
+      console.warn('L\'email n\'est pas valide')
+      return false
+    }
+    
+    return true
+  }
+})
+
+function validateAndSubmit() {
+  // Envoi avec validation
+  emitWithSchema('submit', { email: 'user@example.com' }) // ✓ Valide
+  emitWithSchema('submit', { name: 'User' }) // ✗ Invalide (pas d'email)
+  emitWithSchema('submit', { email: 'invalidemail' }) // ✗ Invalide (format)
+}
+</script>
+```
+
+## v-model: Liaison Bidirectionnelle
+
+<Callout type="info">
+  `v-model` est un raccourci pour la mise en place d'une liaison bidirectionnelle entre un parent et un enfant.
+</Callout>
+
+### v-model Personnalisé sur Composant
+
+<Tabs items={['Parent', 'Enfant']}>
+  <Tab value="Parent">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref } from 'vue'
+  import CustomInput from './CustomInput.vue'
+  
+  const searchText = ref('')
+  </script>
+  
+  <template>
+    <div>
+      <CustomInput v-model="searchText" />
+      <p>Texte de recherche: {{ searchText }}</p>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Enfant">
+  ```vue showLineNumbers
+  <script setup>
+  defineProps({
+    modelValue: String
+  })
+  
+  defineEmits(['update:modelValue'])
+  </script>
+  
+  <template>
+    <div class="custom-input">
+      <input
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+        placeholder="Rechercher..."
+      />
+      <button @click="$emit('update:modelValue', '')">
+        Effacer
+      </button>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Renommer modelValue (v-model personnalisé)
+
+<Tabs items={['Parent', 'Enfant']}>
+  <Tab value="Parent">
+  ```vue showLineNumbers
+  <script setup>
+  import { ref } from 'vue'
+  import CustomSwitch from './CustomSwitch.vue'
+  
+  const enabled = ref(false)
+  </script>
+  
+  <template>
+    <div>
+      <CustomSwitch v-model:checked="enabled" />
+      <p>État: {{ enabled ? 'Activé' : 'Désactivé' }}</p>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Enfant">
+  ```vue showLineNumbers
+  <script setup>
+  defineProps({
+    checked: Boolean
+  })
+  
+  defineEmits(['update:checked'])
+  </script>
+  
+  <template>
+    <label class="switch">
+      <input
+        type="checkbox"
+        :checked="checked"
+        @change="$emit('update:checked', $event.target.checked)"
+      />
+      <span class="slider"></span>
+    </label>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Plusieurs v-model
+
+```vue showLineNumbers
+<!-- Parent -->
+<template>
+  <UserForm
+    v-model:firstName="firstName"
+    v-model:lastName="lastName"
+    v-model:email="email"
+  />
+</template>
+
+<!-- Enfant (UserForm.vue) -->
+<script setup>
+defineProps({
+  firstName: String,
+  lastName: String,
+  email: String
+})
+
+defineEmits([
+  'update:firstName',
+  'update:lastName',
+  'update:email'
+])
+</script>
+
+<template>
+  <form>
+    <input
+      :value="firstName"
+      @input="$emit('update:firstName', $event.target.value)"
+      placeholder="Prénom"
+    />
+    
+    <input
+      :value="lastName"
+      @input="$emit('update:lastName', $event.target.value)"
+      placeholder="Nom"
+    />
+    
+    <input
+      :value="email"
+      @input="$emit('update:email', $event.target.value)"
+      placeholder="Email"
+    />
+  </form>
+</template>
+```
+
+## Bus d'Événements et Communication Globale
+
+<Callout type="warning">
+  L'utilisation d'un bus d'événements global est déconseillée dans Vue 3 en faveur d'autres approches comme Provide/Inject, Pinia ou Flux unitaire. Si vous en avez besoin pour la communication entre composants sans relation, créez un bus d'événements ciblé et limitez son utilisation.
+</Callout>
+
+```js showLineNumbers
+// eventBus.js
+import { reactive } from 'vue'
+import mitt from 'mitt' // Bibliothèque légère pour la gestion d'événements
+
+// Création d'un émetteur d'événements
+const emitter = mitt()
+
+// Exporter les méthodes du bus
+export default {
+  // Émettre un événement
+  emit: (event, data) => emitter.emit(event, data),
+  
+  // S'abonner à un événement
+  on: (event, callback) => emitter.on(event, callback),
+  
+  // Se désabonner d'un événement
+  off: (event, callback) => emitter.off(event, callback)
+}
+```
+
+```vue showLineNumbers
+<!-- ComponentA.vue -->
+<script setup>
+import { onMounted, onUnmounted } from 'vue'
+import eventBus from './eventBus'
+
+// Abonnement à un événement
+onMounted(() => {
+  eventBus.on('global-event', handleGlobalEvent)
+})
+
+// Se désabonner pour éviter les fuites de mémoire
+onUnmounted(() => {
+  eventBus.off('global-event', handleGlobalEvent)
+})
+
+function handleGlobalEvent(data) {
+  console.log('Événement global reçu dans ComponentA:', data)
+}
+</script>
+
+<!-- ComponentB.vue -->
+<script setup>
+import eventBus from './eventBus'
+
+function triggerGlobalEvent() {
+  eventBus.emit('global-event', {
+    message: 'Notification à tous les composants',
+    timestamp: Date.now()
+  })
+}
+</script>
+```
+
+## Exercice Pratique: Panneau d'Accordéon
+
+<Callout type="info">
+  Créez un composant accordéon où seul un panneau peut être ouvert à la fois, en utilisant les événements pour la communication.
+</Callout>
+
+<Steps>
+  <Step title="Composant AccordionItem (Panneau individuel)">
+    ```vue showLineNumbers
+    <!-- AccordionItem.vue -->
+    <script setup>
+    defineProps({
+      title: {
+        type: String,
+        required: true
+      },
+      isOpen: {
+        type: Boolean,
+        default: false
+      },
+      index: {
+        type: Number,
+        required: true
+      }
+    })
+    
+    const emit = defineEmits(['toggle'])
+    
+    function togglePanel() {
+      emit('toggle', {
+        index: props.index,
+        isCurrentlyOpen: props.isOpen
+      })
+    }
+    </script>
+    
+    <template>
+      <div class="accordion-item">
+        <div 
+          class="accordion-header" 
+          @click="togglePanel"
+          :class="{ active: isOpen }"
+        >
+          <h3>{{ title }}</h3>
+          <span class="icon">{{ isOpen ? '−' : '+' }}</span>
+        </div>
+        
+        <div 
+          class="accordion-content"
+          :class="{ open: isOpen }"
+        >
+          <div class="content-inner">
+            <slot></slot>
+          </div>
+        </div>
+      </div>
+    </template>
+    
+    <style scoped>
+    .accordion-item {
+      border: 1px solid #ddd;
+      margin-bottom: -1px;
+    }
+    
+    .accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background-color: #f5f5f5;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .accordion-header:hover {
+      background-color: #e9e9e9;
+    }
+    
+    .accordion-header.active {
+      background-color: #e0e0e0;
+    }
+    
+    .accordion-header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    
+    .icon {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .accordion-content.open {
+      max-height: 300px;
+    }
+    
+    .content-inner {
+      padding: 15px;
+      border-top: 1px solid #ddd;
+    }
+    </style>
+    ```
+  </Step>
+  
+  <Step title="Composant Accordion (Conteneur Parent)">
+    ```vue showLineNumbers
+    <!-- Accordion.vue -->
+    <script setup>
+    import { ref } from 'vue'
+    import AccordionItem from './AccordionItem.vue'
+    
+    const props = defineProps({
+      items: {
+        type: Array,
+        required: true
+      },
+      // Si vrai, permet d'avoir plusieurs panneaux ouverts simultanément
+      allowMultiple: {
+        type: Boolean,
+        default: false
+      }
+    })
+    
+    // Tableau pour suivre les indices des panneaux ouverts
+    const openPanels = ref(new Set())
+    
+    function handleToggle({ index, isCurrentlyOpen }) {
+      if (props.allowMultiple) {
+        // Si multiple autorisé, basculer l'état du panneau
+        if (isCurrentlyOpen) {
+          openPanels.value.delete(index)
+        } else {
+          openPanels.value.add(index)
+        }
+      } else {
+        // Si un seul panneau autorisé
+        if (isCurrentlyOpen) {
+          // Si on ferme le panneau actuellement ouvert, tout est fermé
+          openPanels.value.clear()
+        } else {
+          // Sinon, on ferme tous les autres et on ouvre celui-ci
+          openPanels.value.clear()
+          openPanels.value.add(index)
+        }
+      }
+    }
+    
+    // Vérifie si un panneau est ouvert
+    function isPanelOpen(index) {
+      return openPanels.value.has(index)
+    }
+    </script>
+    
+    <template>
+      <div class="accordion">
+        <AccordionItem
+          v-for="(item, index) in items"
+          :key="index"
+          :title="item.title"
+          :isOpen="isPanelOpen(index)"
+          :index="index"
+          @toggle="handleToggle"
+        >
+          {{ item.content }}
+        </AccordionItem>
+      </div>
+    </template>
+    
+    <style scoped>
+    .accordion {
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    </style>
+    ```
+  </Step>
+  
+  <Step title="Utilisation du Composant Accordion">
+    ```vue showLineNumbers
+    <script setup>
+    import Accordion from './Accordion.vue'
+    import { ref } from 'vue'
+    
+    const accordionItems = ref([
+      {
+        title: 'Section 1',
+        content: 'Contenu de la section 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+      },
+      {
+        title: 'Section 2',
+        content: 'Contenu de la section 2. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+      },
+      {
+        title: 'Section 3',
+        content: 'Contenu de la section 3. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.'
+      }
+    ])
+    
+    const allowMultiple = ref(false)
+    
+    function toggleMode() {
+      allowMultiple.value = !allowMultiple.value
+    }
+    </script>
+    
+    <template>
+      <div class="accordion-demo">
+        <h1>Démo d'Accordéon</h1>
+        
+        <div class="settings">
+          <label>
+            <input 
+              type="checkbox" 
+              v-model="allowMultiple"
+            >
+            Autoriser plusieurs panneaux ouverts
+          </label>
+        </div>
+        
+        <Accordion 
+          :items="accordionItems"
+          :allowMultiple="allowMultiple"
+        />
+      </div>
+    </template>
+    
+    <style>
+    .accordion-demo {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .settings {
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+    }
+    </style>
+    ```
+  </Step>
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Nommer Clairement les Événements" icon="📝">
+    Utilisez des noms explicites avec format kebab-case pour les événements personnalisés
+  </Card>
+  <Card title="Documenter les Événements" icon="📚">
+    Utilisez `defineEmits` pour documenter les événements émis et leurs charges utiles
+  </Card>
+  <Card title="La Communication est Unidirectionnelle" icon="↕️">
+    Les props descendent, les événements remontent - respectez ce modèle
+  </Card>
+  <Card title="Éviter le Bus d'Événements Global" icon="⚠️">
+    Préférez des alternatives comme Provide/Inject ou Pinia
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Slots" href="slots" icon="🧩">
+    Maîtrisez la distribution de contenu
+  </Card>
+  <Card title="Provide/Inject" href="provide-inject" icon="🔄">
+    Communication avancée entre composants
+  </Card>
+</Cards> 

@@ -1,0 +1,991 @@
+---
+title: Provide/Inject en Vue.js
+description: Apprenez à utiliser le mécanisme Provide/Inject pour partager des données entre des composants sans avoir à passer explicitement des props à travers chaque niveau.
+---
+
+import { Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction à Provide/Inject
+
+<Callout type="info">
+  Provide/Inject est un mécanisme qui permet de partager des données entre des composants ancêtres et descendants sans avoir à passer explicitement des props à travers chaque niveau intermédiaire.
+</Callout>
+
+## Problème du "Prop Drilling"
+
+<Callout type="warning">
+  Le "prop drilling" survient lorsque vous devez passer des props à travers de multiples niveaux de composants simplement pour les transmettre à un composant profondément imbriqué.
+</Callout>
+
+```vue showLineNumbers
+<!-- Exemple de prop drilling -->
+<template>
+  <GrandParent :user="user" />
+</template>
+
+<!-- GrandParent.vue -->
+<template>
+  <Parent :user="user" />
+</template>
+
+<!-- Parent.vue -->
+<template>
+  <Child :user="user" />
+</template>
+
+<!-- Child.vue -->
+<template>
+  <GrandChild :user="user" />
+</template>
+
+<!-- GrandChild.vue -->
+<template>
+  <!-- Composant qui utilise réellement les données -->
+  <div>{{ user.name }}</div>
+</template>
+```
+
+## Utilisation de Base de Provide/Inject
+
+### Fournir des Données (Provide)
+
+<Tabs items={['Composition API', 'Options API']}>
+  <Tab value="Composition API">
+  ```vue showLineNumbers
+  <script setup>
+  import { provide, ref } from 'vue'
+  import ChildComponent from './ChildComponent.vue'
+  
+  // Données à fournir
+  const theme = ref('light')
+  const user = ref({
+    name: 'Alice',
+    role: 'admin'
+  })
+  
+  // Fournir des valeurs simples
+  provide('theme', theme)
+  
+  // Fournir des objets
+  provide('user', user)
+  
+  // Fournir des valeurs en lecture seule avec computed
+  provide('userRole', computed(() => user.value.role))
+  
+  // Fournir une fonction pour modifier les données
+  function updateTheme(newTheme) {
+    theme.value = newTheme
+  }
+  
+  provide('updateTheme', updateTheme)
+  </script>
+  
+  <template>
+    <div :class="theme">
+      <h1>Composant Racine</h1>
+      <button @click="updateTheme(theme === 'light' ? 'dark' : 'light')">
+        Changer le thème
+      </button>
+      
+      <ChildComponent />
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Options API">
+  ```vue showLineNumbers
+  <script>
+  export default {
+    data() {
+      return {
+        theme: 'light',
+        user: {
+          name: 'Alice',
+          role: 'admin'
+        }
+      }
+    },
+    
+    // Fournir des valeurs aux descendants
+    provide() {
+      return {
+        theme: this.theme, // ⚠️ NON réactif
+        
+        // Pour fournir des valeurs réactives avec Options API
+        // vous devez utiliser computed ou des objets réactifs
+        userRole: computed(() => this.user.role),
+        
+        // Fonction pour mettre à jour le thème
+        updateTheme: this.updateTheme
+      }
+    },
+    
+    methods: {
+      updateTheme(newTheme) {
+        this.theme = newTheme
+      }
+    }
+  }
+  </script>
+  
+  <template>
+    <div :class="theme">
+      <h1>Composant Racine</h1>
+      <button @click="updateTheme(theme === 'light' ? 'dark' : 'light')">
+        Changer le thème
+      </button>
+      
+      <ChildComponent />
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+### Injecter des Données (Inject)
+
+<Tabs items={['Composition API', 'Options API']}>
+  <Tab value="Composition API">
+  ```vue showLineNumbers
+  <script setup>
+  import { inject } from 'vue'
+  
+  // Injecter les valeurs fournies
+  const theme = inject('theme')
+  const user = inject('user')
+  const userRole = inject('userRole')
+  const updateTheme = inject('updateTheme')
+  
+  // Injecter avec une valeur par défaut
+  const appVersion = inject('appVersion', '1.0.0')
+  
+  function toggleTheme() {
+    updateTheme(theme.value === 'light' ? 'dark' : 'light')
+  }
+  </script>
+  
+  <template>
+    <div class="descendant-component">
+      <h2>Composant Descendant</h2>
+      <p>Thème actuel: {{ theme }}</p>
+      <p>Utilisateur: {{ user.name }}</p>
+      <p>Rôle: {{ userRole }}</p>
+      <p>Version de l'application: {{ appVersion }}</p>
+      
+      <button @click="toggleTheme">
+        Basculer le thème
+      </button>
+    </div>
+  </template>
+  ```
+  </Tab>
+  <Tab value="Options API">
+  ```vue showLineNumbers
+  <script>
+  export default {
+    // Injecter les valeurs fournies
+    inject: {
+      // Syntaxe simple
+      theme: 'theme',
+      
+      // Syntaxe avec alias
+      userInfo: {
+        from: 'user', // nom injecté
+        default: { name: 'Invité', role: 'visitor' } // valeur par défaut
+      },
+      
+      // Injecter une fonction
+      updateTheme: {
+        from: 'updateTheme'
+      }
+    },
+    
+    methods: {
+      toggleTheme() {
+        this.updateTheme(this.theme === 'light' ? 'dark' : 'light')
+      }
+    }
+  }
+  </script>
+  
+  <template>
+    <div class="descendant-component">
+      <h2>Composant Descendant</h2>
+      <p>Thème actuel: {{ theme }}</p>
+      <p>Utilisateur: {{ userInfo.name }}</p>
+      
+      <button @click="toggleTheme">
+        Basculer le thème
+      </button>
+    </div>
+  </template>
+  ```
+  </Tab>
+</Tabs>
+
+## Réactivité avec Provide/Inject
+
+<Callout type="warning">
+  La réactivité n'est pas automatiquement préservée lors de l'utilisation de Provide/Inject. Vous devez prendre des mesures spécifiques pour maintenir la réactivité.
+</Callout>
+
+### Fournir des Valeurs Réactives
+
+```vue showLineNumbers
+<script setup>
+import { ref, reactive, readonly, computed, provide } from 'vue'
+
+// Données réactives
+const count = ref(0)
+const user = reactive({
+  name: 'Alice',
+  preferences: {
+    darkMode: true,
+    notifications: 'all'
+  }
+})
+
+// Méthodes pour modifier les données
+function increment() {
+  count.value++
+}
+
+function updateUserName(newName) {
+  user.name = newName
+}
+
+// 1. Fournir une ref directement (réactive)
+provide('count', count)
+
+// 2. Fournir une version en lecture seule pour empêcher les modifications
+provide('readonlyCount', readonly(count))
+
+// 3. Fournir un objet réactif
+provide('user', user)
+
+// 4. Fournir une version en lecture seule d'un objet
+provide('readonlyUser', readonly(user))
+
+// 5. Fournir une valeur calculée (computed)
+provide('doubleCount', computed(() => count.value * 2))
+
+// 6. Fournir des fonctions pour les mises à jour
+provide('increment', increment)
+provide('updateUserName', updateUserName)
+</script>
+```
+
+### Maintenance de la Réactivité
+
+<Tabs items={['Avec computed', 'Avec refs']}>
+  <Tab value="Avec computed">
+  ```vue showLineNumbers
+  <!-- Options API avec computed -->
+  <script>
+  import { computed } from 'vue'
+  
+  export default {
+    data() {
+      return {
+        message: 'Hello',
+        user: {
+          name: 'Alice'
+        }
+      }
+    },
+    
+    provide() {
+      return {
+        // Utiliser computed pour créer un getter réactif
+        message: computed(() => this.message),
+        
+        // Pour des objets imbriqués
+        userName: computed(() => this.user.name),
+        
+        // Méthode pour les mises à jour
+        updateMessage: (newMessage) => {
+          this.message = newMessage
+        }
+      }
+    }
+  }
+  </script>
+  ```
+  </Tab>
+  <Tab value="Avec refs">
+  ```vue showLineNumbers
+  <!-- Composition API avec refs -->
+  <script setup>
+  import { ref, provide, readonly } from 'vue'
+  
+  const message = ref('Hello')
+  const count = ref(0)
+  
+  // Pattern recommandé pour les modifications contrôlées
+  provide('message', readonly(message)) // Lecture seule pour empêcher les modifications directes
+  provide('count', readonly(count))
+  
+  // Fournir des fonctions de mise à jour
+  function updateMessage(newMessage) {
+    // Validation ou logique supplémentaire si nécessaire
+    message.value = newMessage
+  }
+  
+  function increment() {
+    count.value++
+  }
+  
+  provide('updateMessage', updateMessage)
+  provide('increment', increment)
+  </script>
+  ```
+  </Tab>
+</Tabs>
+
+## Symboles comme Clés d'Injection
+
+<Callout type="info">
+  Utilisez des symboles JavaScript pour éviter les collisions de noms lors de l'utilisation de Provide/Inject dans des applications ou bibliothèques complexes.
+</Callout>
+
+```js showLineNumbers
+// keys.js
+export const themeSymbol = Symbol('theme')
+export const userSymbol = Symbol('user')
+export const updateThemeSymbol = Symbol('updateTheme')
+```
+
+```vue showLineNumbers
+<!-- Provider -->
+<script setup>
+import { provide, ref } from 'vue'
+import { themeSymbol, userSymbol, updateThemeSymbol } from './keys'
+
+const theme = ref('light')
+const user = ref({ name: 'Alice' })
+
+function updateTheme(newTheme) {
+  theme.value = newTheme
+}
+
+provide(themeSymbol, theme)
+provide(userSymbol, user)
+provide(updateThemeSymbol, updateTheme)
+</script>
+
+<!-- Consumer -->
+<script setup>
+import { inject } from 'vue'
+import { themeSymbol, userSymbol, updateThemeSymbol } from './keys'
+
+const theme = inject(themeSymbol)
+const user = inject(userSymbol)
+const updateTheme = inject(updateThemeSymbol)
+</script>
+```
+
+## Cas d'Utilisation Courants
+
+### Thème d'Application
+
+```vue showLineNumbers
+<!-- ThemeProvider.vue -->
+<script setup>
+import { ref, provide, computed } from 'vue'
+
+const theme = ref(localStorage.getItem('theme') || 'light')
+
+// Calculs basés sur le thème actuel
+const isDark = computed(() => theme.value === 'dark')
+const textColor = computed(() => isDark.value ? '#fff' : '#333')
+const backgroundColor = computed(() => isDark.value ? '#333' : '#fff')
+
+// Fonction pour changer le thème
+function toggleTheme() {
+  theme.value = theme.value === 'light' ? 'dark' : 'light'
+  localStorage.setItem('theme', theme.value)
+}
+
+// Fournir toutes les valeurs liées au thème
+provide('theme', theme)
+provide('isDark', isDark)
+provide('textColor', textColor)
+provide('backgroundColor', backgroundColor)
+provide('toggleTheme', toggleTheme)
+</script>
+
+<template>
+  <div :class="`theme-${theme}`">
+    <slot></slot>
+  </div>
+</template>
+
+<style>
+.theme-light {
+  --text-color: #333;
+  --bg-color: #fff;
+  --primary-color: #007bff;
+}
+
+.theme-dark {
+  --text-color: #fff;
+  --bg-color: #222;
+  --primary-color: #58a6ff;
+}
+</style>
+```
+
+```vue showLineNumbers
+<!-- Usage -->
+<script setup>
+import ThemeProvider from './ThemeProvider.vue'
+import AppHeader from './AppHeader.vue'
+import AppContent from './AppContent.vue'
+import AppFooter from './AppFooter.vue'
+</script>
+
+<template>
+  <ThemeProvider>
+    <AppHeader />
+    <AppContent />
+    <AppFooter />
+  </ThemeProvider>
+</template>
+```
+
+```vue showLineNumbers
+<!-- ThemeSwitcher.vue (n'importe où dans l'arbre des composants) -->
+<script setup>
+import { inject } from 'vue'
+
+const theme = inject('theme')
+const toggleTheme = inject('toggleTheme')
+</script>
+
+<template>
+  <button @click="toggleTheme">
+    Thème actuel: {{ theme }}
+    (Cliquez pour basculer)
+  </button>
+</template>
+```
+
+### Gestion des Utilisateurs
+
+```vue showLineNumbers
+<!-- UserProvider.vue -->
+<script setup>
+import { ref, provide, readonly } from 'vue'
+
+const currentUser = ref(null)
+const isAuthenticated = computed(() => !!currentUser.value)
+
+async function login(credentials) {
+  try {
+    // Simuler une API de connexion
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    })
+    
+    const userData = await response.json()
+    currentUser.value = userData
+    return { success: true }
+  } catch (error) {
+    return { success: false, error }
+  }
+}
+
+function logout() {
+  currentUser.value = null
+  // Autres opérations de déconnexion...
+}
+
+// Fournir des données et méthodes liées à l'utilisateur
+provide('currentUser', readonly(currentUser))
+provide('isAuthenticated', isAuthenticated)
+provide('login', login)
+provide('logout', logout)
+</script>
+
+<template>
+  <slot></slot>
+</template>
+```
+
+```vue showLineNumbers
+<!-- LoginForm.vue (composant profondément imbriqué) -->
+<script setup>
+import { ref, inject } from 'vue'
+
+const login = inject('login')
+const isAuthenticated = inject('isAuthenticated')
+const currentUser = inject('currentUser')
+
+const username = ref('')
+const password = ref('')
+const error = ref('')
+const loading = ref(false)
+
+async function handleSubmit() {
+  error.value = ''
+  loading.value = true
+  
+  try {
+    const result = await login({
+      username: username.value,
+      password: password.value
+    })
+    
+    if (!result.success) {
+      error.value = 'Identifiants invalides'
+    }
+  } catch (e) {
+    error.value = 'Erreur de connexion'
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+<template>
+  <div>
+    <div v-if="isAuthenticated">
+      Connecté en tant que {{ currentUser.name }}
+    </div>
+    
+    <form v-else @submit.prevent="handleSubmit">
+      <div>
+        <label for="username">Nom d'utilisateur:</label>
+        <input id="username" v-model="username" required>
+      </div>
+      
+      <div>
+        <label for="password">Mot de passe:</label>
+        <input id="password" type="password" v-model="password" required>
+      </div>
+      
+      <div v-if="error" class="error">{{ error }}</div>
+      
+      <button type="submit" :disabled="loading">
+        {{ loading ? 'Connexion...' : 'Se connecter' }}
+      </button>
+    </form>
+  </div>
+</template>
+```
+
+## Intégration avec le Store Global
+
+<Callout type="info">
+  Provide/Inject peut être combiné avec Pinia ou d'autres solutions de gestion d'état pour une expérience plus robuste.
+</Callout>
+
+```js showLineNumbers
+// store/theme.js
+import { defineStore } from 'pinia'
+
+export const useThemeStore = defineStore('theme', {
+  state: () => ({
+    current: localStorage.getItem('theme') || 'light',
+    available: ['light', 'dark', 'system']
+  }),
+  
+  getters: {
+    isDark: (state) => state.current === 'dark',
+    cssVars: (state) => ({
+      textColor: state.current === 'dark' ? '#fff' : '#333',
+      bgColor: state.current === 'dark' ? '#333' : '#fff'
+    })
+  },
+  
+  actions: {
+    setTheme(theme) {
+      if (this.available.includes(theme)) {
+        this.current = theme
+        localStorage.setItem('theme', theme)
+      }
+    },
+    
+    toggleTheme() {
+      this.setTheme(this.current === 'light' ? 'dark' : 'light')
+    }
+  }
+})
+```
+
+```vue showLineNumbers
+<!-- ThemeProvider.vue avec Pinia -->
+<script setup>
+import { provide } from 'vue'
+import { useThemeStore } from './store/theme'
+
+const themeStore = useThemeStore()
+
+// Fournir le store complet
+provide('themeStore', themeStore)
+
+// Fournir aussi des valeurs et méthodes individuelles si nécessaire
+provide('currentTheme', computed(() => themeStore.current))
+provide('isDark', computed(() => themeStore.isDark))
+provide('toggleTheme', themeStore.toggleTheme)
+</script>
+
+<template>
+  <div :class="`theme-${themeStore.current}`">
+    <slot></slot>
+  </div>
+</template>
+```
+
+## Exercice Pratique: Système de Notifications
+
+<Callout type="info">
+  Créez un système de notifications réutilisable avec Provide/Inject qui permet d'afficher des messages à partir de n'importe quel composant de l'application.
+</Callout>
+
+<Steps>
+  <Step title="Créez un Fournisseur de Notifications">
+    ```vue showLineNumbers
+    <!-- NotificationProvider.vue -->
+    <script setup>
+    import { ref, provide } from 'vue'
+    
+    // Tableau des notifications actives
+    const notifications = ref([])
+    
+    // ID auto-incrémenté pour les notifications
+    let nextId = 0
+    
+    // Ajouter une notification
+    function notify({ message, type = 'info', timeout = 3000 }) {
+      const id = nextId++
+      
+      // Ajouter la notification
+      notifications.value.push({
+        id,
+        message,
+        type, // 'info', 'success', 'warning', 'error'
+        timestamp: Date.now()
+      })
+      
+      // Auto-suppression après le délai
+      if (timeout > 0) {
+        setTimeout(() => {
+          removeNotification(id)
+        }, timeout)
+      }
+      
+      return id
+    }
+    
+    // Helper functions for common notification types
+    function success(message, timeout) {
+      return notify({ message, type: 'success', timeout })
+    }
+    
+    function error(message, timeout) {
+      return notify({ message, type: 'error', timeout })
+    }
+    
+    function warning(message, timeout) {
+      return notify({ message, type: 'warning', timeout })
+    }
+    
+    function info(message, timeout) {
+      return notify({ message, type: 'info', timeout })
+    }
+    
+    // Supprimer une notification par ID
+    function removeNotification(id) {
+      const index = notifications.value.findIndex(n => n.id === id)
+      if (index !== -1) {
+        notifications.value.splice(index, 1)
+      }
+    }
+    
+    // Supprimer toutes les notifications
+    function clearNotifications() {
+      notifications.value = []
+    }
+    
+    // Fournir les notifications et les méthodes
+    provide('notifications', notifications)
+    provide('notify', notify)
+    provide('success', success)
+    provide('error', error)
+    provide('warning', warning)
+    provide('info', info)
+    provide('removeNotification', removeNotification)
+    provide('clearNotifications', clearNotifications)
+    </script>
+    
+    <template>
+      <div>
+        <!-- Rendu des notifications -->
+        <div class="notifications-container">
+          <transition-group name="notification">
+            <div
+              v-for="notification in notifications"
+              :key="notification.id"
+              class="notification"
+              :class="`notification-${notification.type}`"
+            >
+              <div class="notification-content">
+                {{ notification.message }}
+              </div>
+              <button
+                class="notification-close"
+                @click="removeNotification(notification.id)"
+              >
+                ×
+              </button>
+            </div>
+          </transition-group>
+        </div>
+        
+        <!-- Slot pour le contenu de l'application -->
+        <slot></slot>
+      </div>
+    </template>
+    
+    <style scoped>
+    .notifications-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 350px;
+    }
+    
+    .notification {
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .notification-info {
+      background-color: #f0f8ff;
+      border-left: 4px solid #1e88e5;
+    }
+    
+    .notification-success {
+      background-color: #f0fff0;
+      border-left: 4px solid #43a047;
+    }
+    
+    .notification-warning {
+      background-color: #fffaeb;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .notification-error {
+      background-color: #fff5f5;
+      border-left: 4px solid #e53935;
+    }
+    
+    .notification-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      margin-left: 15px;
+      color: #666;
+    }
+    
+    /* Animations de transition */
+    .notification-enter-active,
+    .notification-leave-active {
+      transition: all 0.3s ease;
+    }
+    
+    .notification-enter-from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    
+    .notification-leave-to {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    </style>
+    ```
+  </Step>
+  
+  <Step title="Créez un Hook Composable pour les Notifications">
+    ```js showLineNumbers
+    // useNotifications.js
+    import { inject } from 'vue'
+    
+    export function useNotifications() {
+      const notifications = inject('notifications')
+      const notify = inject('notify')
+      const success = inject('success')
+      const error = inject('error')
+      const warning = inject('warning')
+      const info = inject('info')
+      const removeNotification = inject('removeNotification')
+      const clearNotifications = inject('clearNotifications')
+      
+      return {
+        // État
+        notifications,
+        
+        // Méthodes
+        notify,
+        success,
+        error,
+        warning,
+        info,
+        removeNotification,
+        clearNotifications
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Utilisez le Système de Notifications">
+    ```vue showLineNumbers
+    <!-- App.vue -->
+    <script setup>
+    import NotificationProvider from './NotificationProvider.vue'
+    import UserForm from './UserForm.vue'
+    import Dashboard from './Dashboard.vue'
+    </script>
+    
+    <template>
+      <NotificationProvider>
+        <div class="app">
+          <h1>Application avec Notifications</h1>
+          <UserForm />
+          <Dashboard />
+        </div>
+      </NotificationProvider>
+    </template>
+    ```
+    
+    ```vue showLineNumbers
+    <!-- UserForm.vue -->
+    <script setup>
+    import { ref } from 'vue'
+    import { useNotifications } from './useNotifications'
+    
+    const { success, error } = useNotifications()
+    
+    const username = ref('')
+    const email = ref('')
+    
+    function handleSubmit() {
+      // Validation simple
+      if (!username.value.trim() || !email.value.includes('@')) {
+        error('Veuillez remplir correctement tous les champs')
+        return
+      }
+      
+      // Simuler une soumission de formulaire
+      setTimeout(() => {
+        success(`Utilisateur ${username.value} enregistré avec succès!`)
+        username.value = ''
+        email.value = ''
+      }, 1000)
+    }
+    </script>
+    
+    <template>
+      <form @submit.prevent="handleSubmit" class="user-form">
+        <h2>Inscription Utilisateur</h2>
+        
+        <div class="form-group">
+          <label for="username">Nom d'utilisateur:</label>
+          <input id="username" v-model="username" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input id="email" type="email" v-model="email" required>
+        </div>
+        
+        <button type="submit">Enregistrer</button>
+      </form>
+    </template>
+    ```
+    
+    ```vue showLineNumbers
+    <!-- Dashboard.vue -->
+    <script setup>
+    import { useNotifications } from './useNotifications'
+    
+    const { info, warning, error, success, clearNotifications } = useNotifications()
+    
+    function showTestNotifications() {
+      info('Ceci est une notification informative')
+      
+      setTimeout(() => {
+        success('Opération réussie!', 4000)
+      }, 1000)
+      
+      setTimeout(() => {
+        warning('Attention: certaines données peuvent être obsolètes', 4000)
+      }, 2000)
+      
+      setTimeout(() => {
+        error('Erreur: connexion au serveur perdue', 4000)
+      }, 3000)
+    }
+    </script>
+    
+    <template>
+      <div class="dashboard">
+        <h2>Tableau de Bord</h2>
+        
+        <div class="actions">
+          <button @click="showTestNotifications">
+            Afficher les notifications de test
+          </button>
+          
+          <button @click="clearNotifications">
+            Effacer toutes les notifications
+          </button>
+        </div>
+      </div>
+    </template>
+    ```
+  </Step>
+</Steps>
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Structure Cohérente" icon="📋">
+    Organisez vos providers au niveau approprié de l'arbre des composants
+  </Card>
+  <Card title="Protection contre les Mutations" icon="🔒">
+    Utilisez `readonly` pour empêcher les modifications directes des états partagés
+  </Card>
+  <Card title="Clés d'Injection Uniques" icon="🔑">
+    Utilisez des symboles pour les clés d'injection dans les grandes applications
+  </Card>
+  <Card title="Documentation Claire" icon="📚">
+    Documentez les API provide/inject comme si elles étaient des API publiques
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Composables" href="composables" icon="🧰">
+    Réutilisation de la logique entre composants
+  </Card>
+  <Card title="Pinia" href="pinia" icon="🍍">
+    Gestion d'état global pour Vue.js
+  </Card>
+</Cards> 

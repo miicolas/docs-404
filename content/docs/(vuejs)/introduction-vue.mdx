@@ -1,0 +1,150 @@
+---
+title: Introduction à Vue.js
+description: Découvrez les fondamentaux de Vue.js, un framework JavaScript progressif pour créer des interfaces utilisateur interactives et réactives.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Qu'est-ce que Vue.js ?
+
+Vue.js est un framework JavaScript progressif développé par Evan You qui permet de créer des interfaces utilisateur interactives et réactives.
+
+<Steps>
+### Caractéristiques principales
+1. **Progressif** : Adoptable de manière incrémentale
+2. **Composants** : Architecture basée sur des composants réutilisables
+3. **Réactivité** : Système de réactivité efficace et explicite
+4. **Virtual DOM** : Optimisation des performances avec un DOM virtuel
+5. **Directives** : Syntaxe déclarative étendant le HTML
+6. **SFC** : Single-File Components pour une meilleure organisation
+</Steps>
+
+## Pré-requis
+
+Pour bien suivre ce cours, vous devez maîtriser :
+
+<Cards>
+  <Card title="JavaScript Moderne" href="/docs/(javascript)/javascript-moderne" icon="🟨">
+    ES6+, fonctions, objets, tableaux, promesses
+  </Card>
+  <Card title="HTML & CSS" href="/docs/(html)/intro-html" icon="🌐">
+    Structure et style des pages web
+  </Card>
+  <Card title="Node.js & npm" href="/docs/(nodejs)/introduction" icon="📦">
+    Environnement de développement JavaScript
+  </Card>
+</Cards>
+
+## Pourquoi Vue.js ?
+
+<Tabs items={['simplicite', 'performance', 'ecosysteme']}>
+  <Tab label="Simplicité" value="simplicite">
+    - Courbe d'apprentissage douce
+    - Syntaxe claire et intuitive
+    - Documentation exhaustive
+    - API simple mais puissante
+  </Tab>
+  <Tab label="Performance" value="performance">
+    - Virtual DOM optimisé
+    - Système de réactivité précis
+    - Compilation plus intelligente
+    - Excellent pour les applications complexes
+  </Tab>
+  <Tab label="Écosystème" value="ecosysteme">
+    - Vue Router pour le routage
+    - Pinia pour la gestion d'état
+    - Vite comme outil de développement
+    - Nuxt.js pour des applications universelles
+  </Tab>
+</Tabs>
+
+## Exemple Simple
+
+```vue showLineNumbers
+<script setup>
+import { ref } from 'vue';
+
+const count = ref(0);
+</script>
+
+<template>
+  <h1>Bonjour Vue !</h1>
+  <button @click="count++">Cliquez-moi</button>
+  <p>Compteur : {{ count }}</p>
+</template>
+```
+
+<Callout type="info">
+  Vue.js utilise une syntaxe déclarative qui combine HTML, CSS et JavaScript dans des composants organisés. La réactivité est au cœur du framework.
+</Callout>
+
+## Structure du Cours
+
+<Steps>
+### Programme
+1. Rendu déclaratif
+2. Attributs dynamiques
+3. Écouteurs d'événements
+4. Formulaires 
+5. Rendu conditionnel
+6. Rendu de listes
+7. Propriétés computed
+8. Lifecycle hooks et template refs
+9. Watchers
+10. Composants
+11. Props 
+12. Emits
+13. Slots
+</Steps>
+
+## Installation avec Vite
+
+<Steps>
+### Configuration Rapide
+```bash
+# Créer un nouveau projet
+npm create vue@latest
+
+# Suivre les instructions à l'écran
+# Puis:
+cd <nom-du-projet>
+npm install
+npm run dev
+```
+</Steps>
+
+## Anatomie d'un Projet Vue
+
+<Files>
+  <Folder name="vue-project" defaultOpen>
+    <Folder name="src" defaultOpen>
+      <File name="App.vue" />
+      <File name="main.js" />
+      <Folder name="components">
+        <File name="HelloWorld.vue" />
+      </Folder>
+      <Folder name="assets" />
+    </Folder>
+    <File name="index.html" />
+    <File name="package.json" />
+    <File name="vite.config.js" />
+  </Folder>
+</Files>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Rendu Déclaratif" href="declarative-rendering" icon="🔄">
+    Découvrez comment afficher dynamiquement du contenu
+  </Card>
+  <Card title="Attributs Dynamiques" href="attributs-dynamiques" icon="🏷️">
+    Apprenez à manipuler les attributs HTML dynamiquement
+  </Card>
+</Cards>
+
+<Callout type="warning">
+  Assurez-vous d'avoir Node.js installé sur votre machine avant de commencer. Vous pouvez le télécharger sur [nodejs.org](https://nodejs.org).
+</Callout>

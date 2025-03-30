@@ -1,0 +1,672 @@
+---
+title: Propriétés Computed en Vue.js
+description: Apprenez à utiliser les propriétés calculées (computed) pour créer des valeurs dérivées réactives dans vos composants Vue.js.
+---
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction aux Propriétés Computed
+
+<Callout type="info">
+  Les propriétés computed sont des valeurs calculées basées sur d'autres propriétés réactives. Elles sont mises en cache et ne sont recalculées que lorsque leurs dépendances changent.
+</Callout>
+
+## Pourquoi Utiliser des Propriétés Computed ?
+
+<Cards>
+  <Card title="Performance" icon="⚡">
+    Elles sont mises en cache et ne se recalculent que lorsque nécessaire
+  </Card>
+  <Card title="Réactivité" icon="🔄">
+    Elles se mettent à jour automatiquement quand leurs dépendances changent
+  </Card>
+  <Card title="Lisibilité" icon="📖">
+    Elles permettent de déplacer la logique complexe hors des templates
+  </Card>
+  <Card title="Réutilisabilité" icon="♻️">
+    Elles peuvent être utilisées à plusieurs endroits dans votre composant
+  </Card>
+</Cards>
+
+## Propriétés Computed Basiques
+
+<Tabs items={['basic', 'multiple', 'chained']}>
+  <Tab label="Utilisation basique" value="basic">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, computed } from 'vue'
+    
+    const firstName = ref('Jean')
+    const lastName = ref('Dupont')
+    
+    // Propriété computed simple
+    const fullName = computed(() => {
+      return `${firstName.value} ${lastName.value}`
+    })
+    </script>
+    
+    <template>
+      <div>
+        <input v-model="firstName" placeholder="Prénom">
+        <input v-model="lastName" placeholder="Nom">
+        <p>Nom complet: {{ fullName }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Dépendances multiples" value="multiple">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, computed } from 'vue'
+    
+    const price = ref(100)
+    const quantity = ref(2)
+    const taxRate = ref(0.2) // 20%
+    
+    // Propriété computed avec plusieurs dépendances
+    const total = computed(() => {
+      const subtotal = price.value * quantity.value
+      const tax = subtotal * taxRate.value
+      return (subtotal + tax).toFixed(2)
+    })
+    </script>
+    
+    <template>
+      <div>
+        <div>
+          <label>Prix unitaire: </label>
+          <input type="number" v-model.number="price">
+        </div>
+        <div>
+          <label>Quantité: </label>
+          <input type="number" v-model.number="quantity" min="1">
+        </div>
+        <div>
+          <label>Taux de taxe: </label>
+          <input 
+            type="range" 
+            v-model.number="taxRate" 
+            min="0" 
+            max="0.5" 
+            step="0.01"
+          >
+          {{ (taxRate * 100).toFixed(0) }}%
+        </div>
+        <p>Montant total: {{ total }}€</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+  <Tab label="Propriétés chaînées" value="chained">
+    ```vue showLineNumbers
+    <script setup>
+    import { ref, computed } from 'vue'
+    
+    const items = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    const filterValue = ref(3)
+    
+    // Propriété computed qui dépend d'une autre propriété computed
+    const filteredItems = computed(() => {
+      return items.value.filter(item => item > filterValue.value)
+    })
+    
+    const evenFilteredItems = computed(() => {
+      return filteredItems.value.filter(item => item % 2 === 0)
+    })
+    
+    const itemsSum = computed(() => {
+      return evenFilteredItems.value.reduce((sum, item) => sum + item, 0)
+    })
+    </script>
+    
+    <template>
+      <div>
+        <div>
+          <label>Filtrer les valeurs supérieures à: </label>
+          <input type="number" v-model.number="filterValue">
+        </div>
+        <p>Items filtrés: {{ filteredItems.join(', ') }}</p>
+        <p>Items pairs filtrés: {{ evenFilteredItems.join(', ') }}</p>
+        <p>Somme des items pairs filtrés: {{ itemsSum }}</p>
+      </div>
+    </template>
+    ```
+  </Tab>
+</Tabs>
+
+## Propriétés Computed vs Méthodes
+
+<Callout type="warning">
+  Une méthode est appelée à chaque rendu, tandis qu'une propriété computed est mise en cache et n'est recalculée que si ses dépendances changent.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+const list = ref([1, 2, 3, 4, 5])
+
+// Propriété computed (avec mise en cache)
+const doubledComputed = computed(() => {
+  console.log('Propriété computed calculée')
+  return list.value.map(n => n * 2)
+})
+
+// Méthode (sans mise en cache)
+function doubledMethod() {
+  console.log('Méthode appelée')
+  return list.value.map(n => n * 2)
+}
+</script>
+
+<template>
+  <div>
+    <button @click="list.push(list.length + 1)">
+      Ajouter un nombre
+    </button>
+    
+    <!-- La propriété computed est calculée une fois puis mise en cache -->
+    <p>Computed: {{ doubledComputed }}</p>
+    <p>Computed à nouveau: {{ doubledComputed }}</p>
+    
+    <!-- La méthode est appelée à chaque affichage -->
+    <p>Méthode: {{ doubledMethod() }}</p>
+    <p>Méthode à nouveau: {{ doubledMethod() }}</p>
+  </div>
+</template>
+```
+
+## Propriétés Computed avec Getters et Setters
+
+<Callout type="info">
+  Par défaut, les propriétés computed sont en lecture seule, mais vous pouvez également définir un setter pour les rendre modifiables.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+const firstName = ref('Jean')
+const lastName = ref('Dupont')
+
+// Propriété computed avec getter et setter
+const fullName = computed({
+  // Getter - appelé quand on accède à la propriété
+  get() {
+    return `${firstName.value} ${lastName.value}`
+  },
+  // Setter - appelé quand on assigne une valeur à la propriété
+  set(newValue) {
+    const parts = newValue.split(' ')
+    firstName.value = parts[0] || ''
+    lastName.value = parts.slice(1).join(' ') || ''
+  }
+})
+
+function updateFullName() {
+  // Ceci appellera le setter
+  fullName.value = 'Marie Martin'
+}
+</script>
+
+<template>
+  <div>
+    <input v-model="firstName" placeholder="Prénom">
+    <input v-model="lastName" placeholder="Nom">
+    <p>Nom complet: {{ fullName }}</p>
+    
+    <input v-model="fullName" placeholder="Nom complet">
+    <button @click="updateFullName">Mettre à jour</button>
+  </div>
+</template>
+```
+
+## Utilisation avec les APIs Options
+
+<Callout type="info">
+  Si vous utilisez l'API Options de Vue.js, les propriétés computed se déclarent différemment mais fonctionnent de façon similaire.
+</Callout>
+
+```vue showLineNumbers
+<!-- Avec l'API Options -->
+<script>
+export default {
+  data() {
+    return {
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      price: 100,
+      quantity: 2
+    }
+  },
+  computed: {
+    // Propriété en lecture seule
+    fullName() {
+      return `${this.firstName} ${this.lastName}`
+    },
+    
+    // Propriété avec getter et setter
+    totalWithTax: {
+      get() {
+        return this.price * this.quantity * 1.2
+      },
+      set(newValue) {
+        this.price = newValue / (this.quantity * 1.2)
+      }
+    }
+  }
+}
+</script>
+```
+
+## Cas d'Utilisation Concrets
+
+### 1. Filtrage et Tri de Liste
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+const todos = ref([
+  { id: 1, text: 'Apprendre Vue', completed: false, priority: 'high' },
+  { id: 2, text: 'Créer un composant', completed: true, priority: 'medium' },
+  { id: 3, text: 'Optimiser l\'application', completed: false, priority: 'high' },
+  { id: 4, text: 'Déployer le projet', completed: false, priority: 'low' }
+])
+
+const hideCompleted = ref(false)
+const filterPriority = ref('all')
+const sortBy = ref('priority')
+
+const filteredAndSortedTodos = computed(() => {
+  // Filtrage
+  let result = todos.value
+  
+  if (hideCompleted.value) {
+    result = result.filter(todo => !todo.completed)
+  }
+  
+  if (filterPriority.value !== 'all') {
+    result = result.filter(todo => todo.priority === filterPriority.value)
+  }
+  
+  // Tri
+  return [...result].sort((a, b) => {
+    if (sortBy.value === 'priority') {
+      const priorityOrder = { high: 1, medium: 2, low: 3 }
+      return priorityOrder[a.priority] - priorityOrder[b.priority]
+    } else {
+      // Tri par texte
+      return a.text.localeCompare(b.text)
+    }
+  })
+})
+
+const todoSummary = computed(() => {
+  const completed = todos.value.filter(t => t.completed).length
+  const total = todos.value.length
+  return `${completed} terminée(s) sur ${total} tâche(s)`
+})
+</script>
+
+<template>
+  <div>
+    <div class="filters">
+      <label>
+        <input type="checkbox" v-model="hideCompleted">
+        Masquer les tâches terminées
+      </label>
+      
+      <select v-model="filterPriority">
+        <option value="all">Toutes les priorités</option>
+        <option value="high">Haute</option>
+        <option value="medium">Moyenne</option>
+        <option value="low">Basse</option>
+      </select>
+      
+      <select v-model="sortBy">
+        <option value="priority">Trier par priorité</option>
+        <option value="text">Trier par nom</option>
+      </select>
+    </div>
+    
+    <p>{{ todoSummary }}</p>
+    
+    <ul>
+      <li 
+        v-for="todo in filteredAndSortedTodos" 
+        :key="todo.id"
+        :class="{ completed: todo.completed }"
+      >
+        <input type="checkbox" v-model="todo.completed">
+        {{ todo.text }}
+        <span class="badge" :class="todo.priority">
+          {{ todo.priority }}
+        </span>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<style scoped>
+.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  margin-left: 5px;
+}
+.high { background-color: #f44336; color: white; }
+.medium { background-color: #ff9800; color: white; }
+.low { background-color: #4caf50; color: white; }
+</style>
+```
+
+### 2. Validation de Formulaire
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+const username = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+
+const usernameError = computed(() => {
+  if (!username.value) return 'Le nom d\'utilisateur est requis'
+  if (username.value.length < 3) return 'Le nom d\'utilisateur doit contenir au moins 3 caractères'
+  return ''
+})
+
+const passwordError = computed(() => {
+  if (!password.value) return 'Le mot de passe est requis'
+  if (password.value.length < 8) return 'Le mot de passe doit contenir au moins 8 caractères'
+  if (!/[A-Z]/.test(password.value)) return 'Le mot de passe doit contenir au moins une majuscule'
+  if (!/\d/.test(password.value)) return 'Le mot de passe doit contenir au moins un chiffre'
+  return ''
+})
+
+const confirmPasswordError = computed(() => {
+  if (!confirmPassword.value) return 'Veuillez confirmer le mot de passe'
+  if (confirmPassword.value !== password.value) return 'Les mots de passe ne correspondent pas'
+  return ''
+})
+
+const isFormValid = computed(() => {
+  return !usernameError.value && 
+         !passwordError.value && 
+         !confirmPasswordError.value && 
+         username.value && 
+         password.value && 
+         confirmPassword.value
+})
+</script>
+
+<template>
+  <form @submit.prevent="submitForm">
+    <div class="form-group">
+      <label for="username">Nom d'utilisateur:</label>
+      <input id="username" v-model="username" type="text">
+      <span v-if="usernameError" class="error">{{ usernameError }}</span>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Mot de passe:</label>
+      <input id="password" v-model="password" type="password">
+      <span v-if="passwordError" class="error">{{ passwordError }}</span>
+    </div>
+    
+    <div class="form-group">
+      <label for="confirm-password">Confirmer le mot de passe:</label>
+      <input id="confirm-password" v-model="confirmPassword" type="password">
+      <span v-if="confirmPasswordError" class="error">{{ confirmPasswordError }}</span>
+    </div>
+    
+    <button type="submit" :disabled="!isFormValid">S'inscrire</button>
+  </form>
+</template>
+
+<style scoped>
+.form-group {
+  margin-bottom: 15px;
+}
+.error {
+  color: red;
+  font-size: 0.8em;
+  display: block;
+  margin-top: 5px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>
+```
+
+## Exercice Pratique
+
+<Callout type="info">
+  Créez un calculateur de devises utilisant des propriétés computed.
+</Callout>
+
+```vue showLineNumbers
+<script setup>
+import { ref, computed } from 'vue'
+
+const amount = ref(100)
+const fromCurrency = ref('EUR')
+const toCurrency = ref('USD')
+
+// Taux de change (simplifiés)
+const exchangeRates = {
+  EUR: { USD: 1.1, GBP: 0.85, JPY: 160.5 },
+  USD: { EUR: 0.91, GBP: 0.77, JPY: 146.8 },
+  GBP: { EUR: 1.18, USD: 1.29, JPY: 190.2 },
+  JPY: { EUR: 0.0062, USD: 0.0068, GBP: 0.0053 }
+}
+
+const availableCurrencies = computed(() => {
+  return Object.keys(exchangeRates)
+})
+
+const convertedAmount = computed(() => {
+  if (fromCurrency.value === toCurrency.value) {
+    return amount.value
+  }
+  
+  const rate = exchangeRates[fromCurrency.value][toCurrency.value]
+  return (amount.value * rate).toFixed(2)
+})
+
+const currencySymbol = computed(() => {
+  const symbols = {
+    EUR: '€',
+    USD: '$',
+    GBP: '£',
+    JPY: '¥'
+  }
+  return symbols[toCurrency.value] || ''
+})
+
+const conversionRate = computed(() => {
+  if (fromCurrency.value === toCurrency.value) {
+    return 1
+  }
+  return exchangeRates[fromCurrency.value][toCurrency.value]
+})
+
+const formattedResult = computed(() => {
+  return `${amount.value} ${fromCurrency.value} = ${currencySymbol.value}${convertedAmount.value} ${toCurrency.value}`
+})
+
+// Inverser les devises
+function swapCurrencies() {
+  const temp = fromCurrency.value
+  fromCurrency.value = toCurrency.value
+  toCurrency.value = temp
+}
+</script>
+
+<template>
+  <div class="currency-converter">
+    <h2>Convertisseur de Devises</h2>
+    
+    <div class="converter-form">
+      <div class="amount-input">
+        <label for="amount">Montant:</label>
+        <input 
+          id="amount" 
+          type="number" 
+          v-model.number="amount" 
+          min="0" 
+          step="0.01"
+        >
+      </div>
+      
+      <div class="currency-selectors">
+        <div class="from-currency">
+          <label for="from-currency">De:</label>
+          <select id="from-currency" v-model="fromCurrency">
+            <option 
+              v-for="currency in availableCurrencies" 
+              :key="currency" 
+              :value="currency"
+            >
+              {{ currency }}
+            </option>
+          </select>
+        </div>
+        
+        <button class="swap-button" @click="swapCurrencies">
+          ⇄
+        </button>
+        
+        <div class="to-currency">
+          <label for="to-currency">Vers:</label>
+          <select id="to-currency" v-model="toCurrency">
+            <option 
+              v-for="currency in availableCurrencies" 
+              :key="currency" 
+              :value="currency"
+            >
+              {{ currency }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div class="conversion-result">
+      <p class="rate-info">1 {{ fromCurrency }} = {{ conversionRate }} {{ toCurrency }}</p>
+      <p class="result">{{ formattedResult }}</p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.currency-converter {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.converter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.amount-input {
+  display: flex;
+  flex-direction: column;
+}
+
+.currency-selectors {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.from-currency, .to-currency {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.swap-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+label {
+  margin-bottom: 5px;
+}
+
+input, select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.conversion-result {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.rate-info {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.result {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+</style>
+```
+
+## Bonnes Pratiques
+
+<Cards>
+  <Card title="Gardez-les Simples" icon="⚡">
+    Les propriétés computed doivent rester simples et se concentrer sur une seule responsabilité
+  </Card>
+  <Card title="Évitez les Effets de Bord" icon="⚠️">
+    Les propriétés computed ne devraient pas modifier d'autres valeurs
+  </Card>
+  <Card title="Préférez Computed aux Méthodes" icon="🔍">
+    Pour les valeurs dérivées qui seront utilisées plusieurs fois dans le template
+  </Card>
+  <Card title="Nommage Descriptif" icon="📝">
+    Utilisez des noms qui décrivent clairement ce que la propriété calcule
+  </Card>
+</Cards>
+
+## Prochaines Étapes
+
+<Cards>
+  <Card title="Lifecycle Hooks" href="lifecycle-hooks" icon="🔄">
+    Découvrez les hooks du cycle de vie des composants
+  </Card>
+  <Card title="Watchers" href="watchers" icon="👀">
+    Apprenez à réagir aux changements de données
+  </Card>
+</Cards> 

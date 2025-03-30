@@ -1,0 +1,20 @@
+{
+    "title": "Vue.js", 
+    "pages": [
+        "introduction-vue",
+        "declarative-rendering",
+        "attributs-dynamiques",
+        "ecouteurs-evenements",
+        "formulaires",
+        "rendu-conditionnel",
+        "rendu-listes",
+        "proprietes-computed",
+        "lifecycle-hooks",
+        "watchers",
+        "composants",
+        "props",
+        "evenements",
+        "slots",
+        "provide-inject"
+    ]
+} 
